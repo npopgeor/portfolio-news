@@ -16,6 +16,8 @@ New in this version:
   - tickers.json supports optional per-ticker thesis notes (used when available)
 """
 import argparse
+import csv
+import io
 import json
 import os
 import re
@@ -25,9 +27,14 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.error import HTTPError
+from urllib.parse import quote_plus, urlencode
 from urllib.request import Request, urlopen
 
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
+SEC_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
+SEC_SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"
+GDELT_DOC_API_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
+ALPHA_VANTAGE_API_URL = "https://www.alphavantage.co/query"
 CURRENT_NEWS_DAYS = 14
 ARCHIVE_RETENTION_DAYS = 365
 PRIMARY_MODEL = "gpt-4.1-mini"
@@ -117,6 +124,8 @@ TRUSTED_EARNINGS_SOURCE_HINTS = [
     "earningswhispers.com",
 ]
 
+SEC_COMPANY_TICKERS_CACHE: Optional[Dict[str, Dict[str, Any]]] = None
+
 
 # ── Utilities ──────────────────────────────────────────────────────────────────
 
@@ -200,6 +209,18 @@ def post_json(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]
     )
     with urlopen(req, timeout=60, context=get_ssl_context()) as resp:
         return json.loads(resp.read().decode("utf-8"))
+
+
+def get_json(url: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+    req = Request(url, headers=headers or {}, method="GET")
+    with urlopen(req, timeout=60, context=get_ssl_context()) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def get_text(url: str, headers: Optional[Dict[str, str]] = None) -> str:
+    req = Request(url, headers=headers or {}, method="GET")
+    with urlopen(req, timeout=60, context=get_ssl_context()) as resp:
+        return resp.read().decode("utf-8", errors="replace")
 
 
 def responses_with_fallback(payload: Dict[str, Any], api_key: str, preferred_model: str) -> Dict[str, Any]:
@@ -596,6 +617,218 @@ def reconcile_earnings_timeline_with_news(
     return normalize_earnings_timeline(reconciled, now)
 
 
+def sec_headers() -> Dict[str, str]:
+    ua = os.getenv("SEC_USER_AGENT", "portfolio-news-bot/1.0 (contact: admin@example.com)")
+    return {
+        "User-Agent": ua,
+        "Accept-Encoding": "gzip, deflate",
+    }
+
+
+def get_sec_ticker_map() -> Dict[str, Dict[str, Any]]:
+    global SEC_COMPANY_TICKERS_CACHE
+    if SEC_COMPANY_TICKERS_CACHE is not None:
+        return SEC_COMPANY_TICKERS_CACHE
+    raw = get_json(SEC_TICKERS_URL, headers=sec_headers())
+    out: Dict[str, Dict[str, Any]] = {}
+    for _, row in raw.items():
+        if not isinstance(row, dict):
+            continue
+        t = str(row.get("ticker", "")).strip().upper()
+        if not t:
+            continue
+        cik = int(row.get("cik_str", 0))
+        out[t] = {"cik": f"{cik:010d}", "title": row.get("title")}
+    SEC_COMPANY_TICKERS_CACHE = out
+    return out
+
+
+def fetch_sec_news_items(ticker: str, now: datetime) -> List[Dict[str, Any]]:
+    ticker_map = get_sec_ticker_map()
+    meta = ticker_map.get(ticker)
+    if not meta:
+        return []
+    data = get_json(SEC_SUBMISSIONS_URL.format(cik=meta["cik"]), headers=sec_headers())
+    recent = (data.get("filings") or {}).get("recent") or {}
+    forms = recent.get("form", []) or []
+    filing_dates = recent.get("filingDate", []) or []
+    accession_numbers = recent.get("accessionNumber", []) or []
+    primary_docs = recent.get("primaryDocument", []) or []
+    if not isinstance(forms, list):
+        return []
+
+    cutoff = (now - timedelta(days=7)).date()
+    items: List[Dict[str, Any]] = []
+    for i, form in enumerate(forms[:80]):
+        f = str(form or "").strip().upper()
+        if f not in {"8-K", "10-Q", "10-K", "6-K", "DEF 14A"}:
+            continue
+        date_raw = filing_dates[i] if i < len(filing_dates) else None
+        dt = parse_date_value(date_raw)
+        if not dt or dt.date() < cutoff:
+            continue
+        accession = str(accession_numbers[i] if i < len(accession_numbers) else "").strip()
+        primary_doc = str(primary_docs[i] if i < len(primary_docs) else "").strip()
+        cik_int = str(int(meta["cik"])) if str(meta["cik"]).isdigit() else str(meta["cik"])
+        acc_no_dash = accession.replace("-", "")
+        url = f"https://www.sec.gov/Archives/edgar/data/{cik_int}/{acc_no_dash}/{primary_doc}" if accession and primary_doc else ""
+        headline = f"{ticker} SEC filing {f}"
+        summary = {
+            "8-K": "Material corporate update filed with SEC; may include earnings, strategy, governance, or legal changes.",
+            "10-Q": "Quarterly report filed with SEC including revenue, margins, guidance context, and risk updates.",
+            "10-K": "Annual report filed with SEC with business model, financials, and risk-factor updates.",
+            "6-K": "Foreign issuer current report filed with SEC with potentially material operational updates.",
+            "DEF 14A": "Proxy filing with governance and management-related disclosures.",
+        }.get(f, "SEC filing with potentially material fundamentals.")
+        items.append({
+            "headline": headline,
+            "summary": summary,
+            "source": "SEC",
+            "url": url,
+            "published_at": dt.strftime("%Y-%m-%d"),
+            "why_it_matters": "Primary-source regulatory filing.",
+            "thesis_signal": "noise",
+        })
+    return items
+
+
+def parse_gdelt_seendate(raw: Any) -> Optional[str]:
+    s = str(raw or "").strip()
+    if re.fullmatch(r"\d{14}", s):
+        try:
+            dt = datetime.strptime(s, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
+            return iso(dt)
+        except ValueError:
+            return None
+    return parse_datetime_to_iso(s)
+
+
+def fetch_gdelt_news_items(ticker: str) -> List[Dict[str, Any]]:
+    query = f'{ticker} (earnings OR guidance OR acquisition OR merger OR lawsuit OR SEC OR investigation OR contract OR partnership OR CEO)'
+    params = {
+        "query": query,
+        "mode": "ArtList",
+        "maxrecords": "50",
+        "format": "json",
+        "sort": "datedesc",
+        "timespan": "7d",
+    }
+    url = f"{GDELT_DOC_API_URL}?{urlencode(params, quote_via=quote_plus)}"
+    payload = get_json(url)
+    articles = payload.get("articles", [])
+    if not isinstance(articles, list):
+        return []
+    items: List[Dict[str, Any]] = []
+    for a in articles:
+        if not isinstance(a, dict):
+            continue
+        title = str(a.get("title") or "").strip()
+        if not title:
+            continue
+        dt_iso = parse_gdelt_seendate(a.get("seendate"))
+        if not dt_iso:
+            continue
+        source = str(a.get("domain") or "Unknown").strip()
+        url_a = str(a.get("url") or "").strip()
+        items.append({
+            "headline": title,
+            "summary": str(a.get("socialimage") or "").strip(),
+            "source": source,
+            "url": url_a,
+            "published_at": dt_iso,
+            "why_it_matters": "Cross-source media signal from GDELT.",
+            "thesis_signal": "noise",
+        })
+    return items
+
+
+def fetch_alpha_earnings_timeline(ticker: str, now: datetime) -> Dict[str, Any]:
+    api_key = os.getenv("ALPHA_VANTAGE_API_KEY", "").strip()
+    if not api_key:
+        return normalize_earnings_timeline({}, now)
+    params = {
+        "function": "EARNINGS_CALENDAR",
+        "symbol": ticker,
+        "horizon": "3month",
+        "apikey": api_key,
+    }
+    url = f"{ALPHA_VANTAGE_API_URL}?{urlencode(params, quote_via=quote_plus)}"
+    raw_csv = get_text(url)
+    if not raw_csv.strip():
+        return normalize_earnings_timeline({}, now)
+    rows = list(csv.DictReader(io.StringIO(raw_csv)))
+    today = now.date()
+    next_date: Optional[str] = None
+    for row in rows:
+        if str(row.get("symbol", "")).strip().upper() != ticker:
+            continue
+        d = parse_date_value(row.get("reportDate"))
+        if not d:
+            continue
+        if d.date() >= today:
+            next_date = d.strftime("%Y-%m-%d")
+            break
+    return normalize_earnings_timeline({
+        "next_earnings_date": next_date,
+        "next_earnings_status": "estimated" if next_date else "unknown",
+        "source_url": "https://www.alphavantage.co/documentation/#earnings-calendar",
+        "notes": "source:alpha_vantage",
+    }, now)
+
+
+def merge_news_items_for_ticker(ticker: str, raw_items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    normalized: List[Dict[str, Any]] = []
+    for row in raw_items:
+        if isinstance(row, dict):
+            item = normalize_news_item(row, ticker)
+            if item:
+                normalized.append(item)
+    by_id: Dict[str, Dict[str, Any]] = {}
+    for item in normalized:
+        by_id[item["id"]] = item
+    merged = list(by_id.values())
+    merged.sort(key=lambda x: x.get("datetime") or "", reverse=True)
+    return merged[:10]
+
+
+def fetch_ticker_data_from_free_sources(
+    ticker: str, now: datetime
+) -> tuple:
+    all_raw_news: List[Dict[str, Any]] = []
+    notes: List[str] = []
+
+    try:
+        sec_news = fetch_sec_news_items(ticker, now)
+        all_raw_news.extend(sec_news)
+        notes.append(f"sec_news={len(sec_news)}")
+    except Exception as exc:
+        notes.append(f"sec_error={str(exc)[:120]}")
+
+    try:
+        gdelt_news = fetch_gdelt_news_items(ticker)
+        all_raw_news.extend(gdelt_news)
+        notes.append(f"gdelt_news={len(gdelt_news)}")
+    except Exception as exc:
+        notes.append(f"gdelt_error={str(exc)[:120]}")
+
+    news_items = merge_news_items_for_ticker(ticker, all_raw_news)
+
+    try:
+        earnings_timeline = fetch_alpha_earnings_timeline(ticker, now)
+        notes.append("alpha=ok" if os.getenv("ALPHA_VANTAGE_API_KEY", "").strip() else "alpha=missing_key")
+    except Exception as exc:
+        earnings_timeline = normalize_earnings_timeline({}, now)
+        notes.append(f"alpha_error={str(exc)[:120]}")
+
+    earnings_timeline = reconcile_earnings_timeline_with_news(earnings_timeline, news_items, now)
+    note = (earnings_timeline.get("notes") or "").strip()
+    extra = "; ".join(notes)
+    earnings_timeline["notes"] = ("; ".join([note, extra]).strip("; ")).strip() or None
+
+    print(f"    {ticker}: free-sources raw={len(all_raw_news)} normalized={len(news_items)}")
+    return news_items, earnings_timeline
+
+
 def fetch_ticker_data_with_gpt(
     ticker: str,
     now: datetime,
@@ -783,13 +1016,16 @@ def save_weekly_snapshot(holdings: List[Dict[str, Any]], now: datetime, archive_
 
 # ── Main pipeline ──────────────────────────────────────────────────────────────
 
-def run(mode: str, tickers_file: Path, site_data_dir: Path):
+def run(mode: str, tickers_file: Path, site_data_dir: Path, data_fetch_mode: str):
     if mode != "weekly":
         raise ValueError("Only 'weekly' mode is supported. Daily mode has been removed.")
 
+    fetch_mode = (data_fetch_mode or os.getenv("DATA_FETCH_MODE", "hybrid")).strip().lower()
+    if fetch_mode not in {"hybrid", "free_only", "gpt_only"}:
+        raise ValueError("DATA_FETCH_MODE must be one of: hybrid, free_only, gpt_only")
     api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise RuntimeError("Missing OPENAI_API_KEY environment variable")
+    if fetch_mode in {"hybrid", "gpt_only"} and not api_key:
+        raise RuntimeError("Missing OPENAI_API_KEY environment variable for GPT-enabled fetch mode")
 
     model = PRIMARY_MODEL
     ticker_configs = load_tickers(tickers_file)
@@ -816,10 +1052,54 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path):
         earnings_timeline = normalize_earnings_timeline({}, now)
 
         try:
-            ticker_news, earnings_timeline = fetch_ticker_data_with_gpt(
-                ticker, now, api_key, model, thesis=thesis
-            )
-        except RuntimeError as exc:
+            gpt_news: List[Dict[str, Any]] = []
+            gpt_earnings = normalize_earnings_timeline({}, now)
+            free_news: List[Dict[str, Any]] = []
+            free_earnings = normalize_earnings_timeline({}, now)
+
+            if fetch_mode in {"hybrid", "gpt_only"}:
+                gpt_news, gpt_earnings = fetch_ticker_data_with_gpt(
+                    ticker, now, api_key or "", model, thesis=thesis
+                )
+            if fetch_mode in {"hybrid", "free_only"}:
+                free_news, free_earnings = fetch_ticker_data_from_free_sources(ticker, now)
+
+            if fetch_mode == "gpt_only":
+                ticker_news, earnings_timeline = gpt_news, gpt_earnings
+            elif fetch_mode == "free_only":
+                ticker_news, earnings_timeline = free_news, free_earnings
+            else:
+                # Compare and merge for higher confidence.
+                ticker_news = merge_news_items_for_ticker(ticker, gpt_news + free_news)
+                earnings_timeline = gpt_earnings
+                gpt_next = gpt_earnings.get("next_earnings_date")
+                free_next = free_earnings.get("next_earnings_date")
+                gpt_out = gpt_earnings.get("last_earnings_outcome")
+                free_out = free_earnings.get("last_earnings_outcome")
+                consensus_bits: List[str] = [
+                    f"source_mode={fetch_mode}",
+                    f"gpt_news={len(gpt_news)}",
+                    f"free_news={len(free_news)}",
+                ]
+                if gpt_next and free_next and gpt_next == free_next:
+                    earnings_timeline["next_earnings_date"] = gpt_next
+                    earnings_timeline["next_earnings_status"] = "scheduled"
+                    consensus_bits.append("next_date_consensus=match")
+                else:
+                    # No cross-source agreement -> be explicit about uncertainty.
+                    earnings_timeline["next_earnings_date"] = None
+                    earnings_timeline["next_earnings_status"] = "unknown"
+                    consensus_bits.append("next_date_consensus=none")
+
+                if gpt_out and free_out and gpt_out == free_out and gpt_out != "unknown":
+                    consensus_bits.append("outcome_consensus=match")
+                else:
+                    consensus_bits.append("outcome_consensus=mixed")
+
+                note = (earnings_timeline.get("notes") or "").strip()
+                earnings_timeline["notes"] = ("; ".join([note, "; ".join(consensus_bits)]).strip("; ")).strip() or None
+                earnings_timeline = reconcile_earnings_timeline_with_news(earnings_timeline, ticker_news, now)
+        except Exception as exc:
             msg = str(exc)
             if "CERTIFICATE_VERIFY_FAILED" in msg:
                 raise RuntimeError(
@@ -869,6 +1149,7 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path):
         "generated_at": iso(now),
         "mode": mode,
         "model": model,
+        "data_fetch_mode": fetch_mode,
         "tickers": [c["ticker"] for c in ticker_configs],
         "summary": {
             "fundamental_item_count": len(all_new_items),
@@ -915,8 +1196,14 @@ def main():
     parser.add_argument("--mode", choices=["weekly"], default="weekly")
     parser.add_argument("--tickers-file", default="config/tickers.json", type=Path)
     parser.add_argument("--site-data-dir", default="site/data", type=Path)
+    parser.add_argument(
+        "--data-fetch-mode",
+        choices=["hybrid", "free_only", "gpt_only"],
+        default=os.getenv("DATA_FETCH_MODE", "hybrid"),
+        help="Data source strategy: hybrid compares GPT+free APIs, free_only uses SEC+GDELT+Alpha, gpt_only uses OpenAI web search only.",
+    )
     args = parser.parse_args()
-    run(args.mode, args.tickers_file, args.site_data_dir)
+    run(args.mode, args.tickers_file, args.site_data_dir, args.data_fetch_mode)
 
 
 if __name__ == "__main__":

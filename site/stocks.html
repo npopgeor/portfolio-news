@@ -952,7 +952,7 @@
 
     const genDate=new Date(data.generated_at);
     const weekOf=getMondayOf(genDate);
-    document.getElementById('meta').textContent=`Week of ${getWeekLabel(weekOf)} · Updated ${genDate.toLocaleString()}`;
+    document.getElementById('meta').textContent=`${getWeekLabel(weekOf)} · Updated ${genDate.toLocaleString()}`;
 
     const s=data.summary||{};
     const breakNote=s.breaking_item_count?` · ⚡ ${s.breaking_item_count} breaking`:'';
