@@ -1,0 +1,25 @@
+Needed keys/accounts now:
+	1	OpenAI (for GPT web search path in hybrid or gpt_only)
+	•	Site: https://platform.openai.com/
+	•	API key page: https://platform.openai.com/api-keys
+	•	GitHub Secret label: OPENAI_API_KEY
+
+	2	Alpha Vantage (free earnings calendar)
+	•	Site: https://www.alphavantage.co/
+	•	Get key: https://www.alphavantage.co/support/#api-key
+	•	GitHub Secret label: ALPHA_VANTAGE_API_KEY -> 27IYNPWRUKN5NF6Z
+	
+    3	SEC EDGAR (no key required, but set user-agent)
+	•	Dev docs: https://www.sec.gov/about/developer-resources
+	•	GitHub Secret/Variable label: SEC_USER_AGENT
+	•	Example value: 1.0 (your-email@domain.com)
+	
+    4	GDELT DOC API (no key required)
+	•	Docs: https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/
+	•	No secret needed
+
+For news now:
+	•	free_only: news comes from SEC + GDELT only (no GPT).
+	•	hybrid (default): news is merged from GPT web search + SEC + GDELT.
+	•	gpt_only: news is only GPT web search.
+So yes, in hybrid you are still using GPT web search for news, but it is cross-checked/augmented by free sources. If you want zero GPT dependency, run --data-fetch-mode free_only.
