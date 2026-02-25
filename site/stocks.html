@@ -545,6 +545,11 @@
     <form id="profile-form" class="form-grid">
       <input id="username" name="username" placeholder="Profile name" required />
       <input id="tickers" name="tickers" placeholder="Tickers  e.g.  AAPL, MSFT, NVDA" required />
+      <select id="fetch-mode" name="fetch-mode">
+        <option value="free_only">Free (local data)</option>
+        <option value="hybrid">Hybrid (free + GPT)</option>
+        <option value="gpt_only">Full GPT</option>
+      </select>
       <input id="openai-key" name="openai-key" placeholder="OpenAI API key" />
       <button type="submit">Fetch Now</button>
     </form>
@@ -566,6 +571,7 @@
   const ARCHIVE_BASE= './data/archive/week_';
   const PROFILE_KEY = 'stocks_profiles_v1';
   const CUSTOM_MODEL_CANDIDATES = ['gpt-4o-search-preview', 'gpt-4.1-mini'];
+  const EMBEDDED_ALPHA_VANTAGE_API_KEY = '27IYNPWRUKN5NF6Z';
   let lastCustomModelUsed = null;
 
   const THEME_RULES = [
@@ -578,14 +584,71 @@
     ['shareholder_returns',  'Capital Returns',          'medium', ['buyback','repurchase','dividend','special dividend']],
     ['product_strategy',     'Product / Strategy',       'medium', ['approval','launch','contract','partnership','pipeline','roadmap']],
   ];
-  const NOISE_KW    = ['daily','intraday','today','technical','chart','rally','dip','overbought','oversold','short squeeze','options activity','price target','rumor'];
+  const NOISE_KW    = ['daily','intraday','technical','chart','rally','dip','overbought','oversold','short squeeze','options activity','price target','rumor'];
   const DURABLE_KW  = ['multi-year','long-term','strategic review','restructuring','cost transformation','capital allocation','five-year','three-year'];
   const BREAKING_KW = ['bankrupt','fraud','sec charges','delisted','class action','loses license','banned','shutdown','catastrophic','structural decline','disrupted','obsolete','market share collapse','regulatory block','accounting irregularity','restatement'];
   const CONFIRMING_KW=['market share gain','record revenue','record earnings','record profit','major contract','strategic win','beats estimates','exceeded expectations','breakthrough','patent granted','regulatory approval','landmark deal'];
+  const MANUAL_TICKER_ALIASES = {
+    AAPL:  ['apple', 'iphone', 'ipad', 'ios', 'macos', 'macbook', 'app store', 'tim cook', 'cupertino'],
+    GOOGL: ['alphabet', 'google', 'youtube', 'android', 'waymo', 'deepmind', 'sundar pichai'],
+    GOOG:  ['alphabet', 'google', 'youtube', 'android', 'waymo', 'deepmind', 'sundar pichai'],
+    META:  ['meta', 'facebook', 'instagram', 'whatsapp', 'oculus', 'mark zuckerberg', 'threads'],
+    MSFT:  ['microsoft', 'azure', 'windows', 'xbox', 'linkedin', 'copilot', 'satya nadella'],
+    AMZN:  ['amazon', 'aws', 'alexa', 'prime video', 'whole foods', 'andy jassy'],
+    NVDA:  ['nvidia', 'cuda', 'geforce', 'jensen huang', 'blackwell', 'hopper'],
+    TSLA:  ['tesla', 'elon musk', 'cybertruck', 'powerwall', 'gigafactory', 'model 3', 'model y'],
+    NFLX:  ['netflix'],
+    INTC:  ['intel'],
+    AMD:   ['amd', 'radeon', 'ryzen', 'epyc', 'lisa su'],
+    CRM:   ['salesforce', 'marc benioff'],
+    ORCL:  ['oracle', 'larry ellison'],
+    ADBE:  ['adobe'],
+    PYPL:  ['paypal'],
+    DIS:   ['disney', 'pixar', 'marvel', 'espn', 'bob iger'],
+    BRKB:  ['berkshire', 'warren buffett', 'buffett'],
+    BRKA:  ['berkshire', 'warren buffett', 'buffett'],
+    JPM:   ['jpmorgan', 'jp morgan', 'jamie dimon'],
+    BAC:   ['bank of america'],
+    GS:    ['goldman sachs', 'goldman'],
+    MS:    ['morgan stanley'],
+    WMT:   ['walmart'],
+    V:     ['visa'],
+    MA:    ['mastercard'],
+    UNH:   ['unitedhealth', 'united health'],
+    JNJ:   ['johnson & johnson', 'j&j'],
+    PFE:   ['pfizer'],
+    MRK:   ['merck'],
+    ABBV:  ['abbvie'],
+    LLY:   ['eli lilly', 'lilly'],
+    XOM:   ['exxon', 'exxonmobil'],
+    CVX:   ['chevron'],
+  };
+
+  function manualTickerTerms(ticker) {
+    const symbol=(ticker||'').toUpperCase();
+    const aliases=MANUAL_TICKER_ALIASES[symbol]||[];
+    return [symbol, ...aliases].filter(Boolean);
+  }
 
   // ── Helpers ──
   function parseTickers(raw) {
     return raw.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean).filter((t,i,a)=>a.indexOf(t)===i);
+  }
+  function sourceDomain(u) { try { return (new URL(u)).hostname.replace(/^www\./,'').toLowerCase(); } catch { return ''; } }
+  function isTickerRelevant(ticker, headline='', summary='') {
+    const t=`${headline} ${summary}`.toLowerCase();
+    if (t.includes(ticker.toLowerCase())) return true;
+    const aliases=MANUAL_TICKER_ALIASES[ticker]||[];
+    return aliases.some(a=>t.includes(a));
+  }
+  function dedupeByHeadline(items) {
+    const seen=new Set(); const out=[];
+    for (const it of (items||[])) {
+      const key=(it.headline||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,120);
+      if (!key || seen.has(key)) continue;
+      seen.add(key); out.push(it);
+    }
+    return out;
   }
   function loadProfiles() { try { return JSON.parse(localStorage.getItem(PROFILE_KEY)||'[]'); } catch { return []; } }
   function saveProfiles(p) { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
@@ -630,6 +693,15 @@
     return 'noise';
   }
 
+  function fallbackTheme(headline='', summary='') {
+    const t=`${headline} ${summary}`.toLowerCase();
+    if (/\b(earnings|eps|revenue|quarter|guidance)\b/.test(t)) return {theme:'earnings',theme_label:'Earnings Quality',priority:'high',horizon_fit:'possible',matched_keyword:'fallback'};
+    if (/\b(acquisition|acquire|merger|deal|buyout)\b/.test(t)) return {theme:'merger_acquisition',theme_label:'M&A / Strategic Deal',priority:'high',horizon_fit:'possible',matched_keyword:'fallback'};
+    if (/\b(sec|lawsuit|regulator|investigation|antitrust)\b/.test(t)) return {theme:'legal_regulatory',theme_label:'Legal / Regulatory',priority:'high',horizon_fit:'possible',matched_keyword:'fallback'};
+    if (/\b(contract|partnership|launch|product|roadmap|ai|chip|platform)\b/.test(t)) return {theme:'product_strategy',theme_label:'Product / Strategy',priority:'medium',horizon_fit:'possible',matched_keyword:'fallback'};
+    return {theme:'product_strategy',theme_label:'Product / Strategy',priority:'medium',horizon_fit:'possible',matched_keyword:'fallback'};
+  }
+
   // ── JSON helpers ──
   function parseJsonArray(text) {
     const c=(text||'').trim(); if (!c) return [];
@@ -667,6 +739,29 @@
       next_earnings_status:['scheduled','estimated','unknown','conflict'].includes(status)?status:'unknown',
       source_url:tl.source_url||null, notes:(tl.notes||'')||null,
     };
+  }
+
+  function earningsTimelineIncomplete(tl) {
+    const t=tl||{};
+    const lastDate=String(t.last_earnings_report_date||'').trim();
+    const lastOutcome=String(t.last_earnings_outcome||'unknown').toLowerCase();
+    const nextDate=String(t.next_earnings_date||'').trim();
+    const nextStatus=String(t.next_earnings_status||'unknown').toLowerCase();
+    return !lastDate || lastOutcome==='unknown' || !nextDate || nextStatus==='unknown' || nextStatus==='conflict';
+  }
+
+  function mergeEarningsFallback(primary, fallback) {
+    const p=Object.assign({}, primary||{});
+    const f=fallback||{};
+    if (!p.last_earnings_report_date && f.last_earnings_report_date) p.last_earnings_report_date=f.last_earnings_report_date;
+    if ((!p.last_earnings_outcome || p.last_earnings_outcome==='unknown') && f.last_earnings_outcome && f.last_earnings_outcome!=='unknown') p.last_earnings_outcome=f.last_earnings_outcome;
+    if (!p.next_earnings_date && f.next_earnings_date) p.next_earnings_date=f.next_earnings_date;
+    if ((!p.next_earnings_status || ['unknown','conflict'].includes(p.next_earnings_status)) && f.next_earnings_status && !['unknown','conflict'].includes(f.next_earnings_status)) p.next_earnings_status=f.next_earnings_status;
+    if (!p.last_earnings_label && f.last_earnings_label) p.last_earnings_label=f.last_earnings_label;
+    if (!p.source_url && f.source_url) p.source_url=f.source_url;
+    const notes=[String(p.notes||'').trim(), String(f.notes||'').trim()].filter(Boolean).join('; ');
+    if (notes) p.notes=notes;
+    return normalizeEarningsTimeline(p);
   }
 
   // ── Earnings outcome ──
@@ -920,7 +1015,7 @@
     lastCustomModelUsed=model;
     return parseJsonArray(extractOutputText(data)).map(item=>{
       const headline=(item.headline||'').trim(), summary=(item.summary||'').trim();
-      const event=classifyFundamental(headline,summary);
+      const event=classifyFundamental(headline,summary) || fallbackTheme(headline,summary);
       if (!headline||!event) return null;
       const gptSig=(item.thesis_signal||'').toLowerCase().replace('thesis_','');
       const thesis_signal=['breaking','confirming','watch','noise'].includes(gptSig)?gptSig:classifyThesisSignal(headline,summary,item.why_it_matters||'');
@@ -945,10 +1040,196 @@
     } catch { return {last_earnings_report_date:null,last_earnings_label:null,last_earnings_outcome:'unknown',next_earnings_date:null,next_earnings_status:'unknown',source_url:null,notes:null}; }
   }
 
+  async function fetchGdeltNewsFree(ticker) {
+    const terms=manualTickerTerms(ticker);
+    const tickerExpr=terms.length>1?`(${terms.map(t=>`"${t}"`).join(' OR ')})`:`"${ticker}"`;
+    const q=encodeURIComponent(`${tickerExpr} AND (earnings OR guidance OR acquisition OR merger OR lawsuit OR SEC OR investigation OR contract OR partnership OR CEO OR revenue OR quarter OR results)`);
+    const url=`https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=ArtList&maxrecords=50&format=json&sort=datedesc&timespan=7d`;
+    console.debug(`[GDELT] URL: ${url}`);
+    for (let i=0;i<3;i++) {
+      try {
+        const r=await fetch(url,{cache:'no-store'});
+        console.debug(`[GDELT] attempt ${i+1} status=${r.status}`);
+        if (r.status===429) { await new Promise(res=>setTimeout(res, 1200*(2**i))); continue; }
+        if (!r.ok) { console.warn(`[GDELT] non-ok response: ${r.status}`); return []; }
+        const rawText = await r.text();
+        console.debug(`[GDELT] raw response (first 300 chars):`, rawText.slice(0,300));
+        let data;
+        try { data = JSON.parse(rawText); }
+        catch(parseErr) {
+          console.error('[GDELT] JSON parse failed. Response was:', rawText.slice(0,500));
+          if (i < 2) { await new Promise(res=>setTimeout(res, 1500*(i+1))); continue; }
+          return [];
+        }
+        const articles=Array.isArray(data?.articles)?data.articles:[];
+        console.debug(`[GDELT] raw articles returned: ${articles.length}`);
+        if (articles.length > 0) console.debug('[GDELT] sample headline:', articles[0]?.title);
+        const mapped = articles.map(a=>{
+          const s=String(a?.seendate||'');
+          let dt='';
+          if (/^\d{14}$/.test(s)) dt=new Date(`${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}T${s.slice(8,10)}:${s.slice(10,12)}:${s.slice(12,14)}Z`).toISOString();
+          return {
+            headline:a?.title||'',
+            summary:'',
+            source:a?.domain||'Unknown',
+            url:a?.url||'#',
+            published_at:dt||null,
+            why_it_matters:'Cross-source media signal.',
+            thesis_signal:'noise'
+          };
+        });
+        const nullDates = mapped.filter(x=>!x.published_at).length;
+        console.debug(`[GDELT] mapped=${mapped.length}, nullDates=${nullDates}`);
+        return mapped;
+      } catch(e) { console.error(`[GDELT] attempt ${i+1} threw:`, e); }
+    }
+    return [];
+  }
+
+  async function fetchAlphaEarningsFree(ticker) {
+    if (!EMBEDDED_ALPHA_VANTAGE_API_KEY) return normalizeEarningsTimeline({});
+    const apikey = encodeURIComponent(EMBEDDED_ALPHA_VANTAGE_API_KEY);
+    const sym    = encodeURIComponent(ticker);
+    console.debug(`[ALPHA] starting for ${ticker}`);
+
+    // ── 1. Next earnings date (EARNINGS_CALENDAR, CSV) ──────────────────────
+    let nextDate = null;
+    try {
+      const r = await fetch(
+        `https://www.alphavantage.co/query?function=EARNINGS_CALENDAR&symbol=${sym}&horizon=3month&apikey=${apikey}`,
+        {cache:'no-store'}
+      );
+      console.debug(`[ALPHA] EARNINGS_CALENDAR status=${r.status}`);
+      if (r.ok) {
+        const csv   = await r.text();
+        const lines = csv.split('\n').map(x=>x.trim()).filter(Boolean);
+        if (lines.length >= 2) {
+          const head = lines[0].split(',');
+          const si   = head.indexOf('symbol'), di = head.indexOf('reportDate');
+          for (let i=1; i<lines.length; i++) {
+            const cols = lines[i].split(',');
+            if ((cols[si]||'').toUpperCase() !== ticker) continue;
+            const d = new Date(cols[di]);
+            if (!isNaN(d.getTime()) && d >= new Date()) { nextDate = d.toISOString().slice(0,10); break; }
+          }
+        }
+      }
+    } catch {}
+
+    // ── 2. Last earnings date + label from OVERVIEW (free endpoint) ─────────
+    // EARNINGS endpoint is premium-only. OVERVIEW gives LatestQuarter (fiscal end date)
+    // which is free and enough to show prev report date and quarter label.
+    // Beat/miss requires premium; we derive it heuristically from news headlines instead.
+    let lastDate = null, lastLabel = null, lastOutcome = 'unknown';
+    try {
+      const r = await fetch(
+        `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${sym}&apikey=${apikey}`,
+        {cache:'no-store'}
+      );
+      console.debug(`[ALPHA] OVERVIEW status=${r.status}`);
+      if (r.ok) {
+        const data = await r.json();
+        if (data?.Note)        console.warn('[ALPHA] rate limit:', data.Note);
+        if (data?.Information) console.warn('[ALPHA] info:', data.Information);
+        console.debug('[ALPHA] OVERVIEW keys:', Object.keys(data||{}).join(', '));
+        // LatestQuarter = fiscal period end date e.g. "2024-12-31"
+        // EPS, QuarterlyEarningsGrowthYOY available too
+        const latestQ = data?.LatestQuarter; // "YYYY-MM-DD"
+        if (latestQ) {
+          // Find the actual report date: Apple typically reports ~4-6 weeks after fiscal end
+          // We don't have the exact reported date, so use LatestQuarter as an approximation
+          lastDate = latestQ;
+          const fd = new Date(latestQ);
+          if (!isNaN(fd.getTime())) {
+            const mo  = fd.getMonth(); // 0-based
+            const qtr = mo < 3 ? 'Q2' : mo < 6 ? 'Q3' : mo < 9 ? 'Q4' : 'Q1';
+            // Apple FY: Q1=Oct-Dec, Q2=Jan-Mar, Q3=Apr-Jun, Q4=Jul-Sep
+            // LatestQuarter end date mo=11(Dec) → Q1, mo=2(Mar) → Q2, mo=5(Jun) → Q3, mo=8(Sep) → Q4
+            const qtrByMo = {11:'Q1',2:'Q2',5:'Q3',8:'Q4'};
+            const qLabel = qtrByMo[mo] || qtr;
+            const fy = (mo === 11) ? fd.getFullYear() + 1 : fd.getFullYear();
+            lastLabel = `${qLabel} FY${fy}`;
+          }
+          // EPS-based outcome: compare EPS vs AnalystTargetPrice is not right,
+          // but QuarterlyEarningsGrowthYOY gives direction at least
+          const qeg = parseFloat(data?.QuarterlyEarningsGrowthYOY);
+          if (!isNaN(qeg)) {
+            lastOutcome = qeg > 0.02 ? 'beat' : qeg < -0.02 ? 'miss' : 'in_line';
+            console.debug(`[ALPHA] QuarterlyEarningsGrowthYOY=${qeg} → outcome=${lastOutcome}`);
+          }
+        }
+        console.debug(`[ALPHA] lastDate=${lastDate}, lastLabel=${lastLabel}, lastOutcome=${lastOutcome}`);
+      }
+    } catch(e) { console.error('[ALPHA] OVERVIEW fetch error:', e); }
+
+    return normalizeEarningsTimeline({
+      last_earnings_report_date: lastDate,
+      last_earnings_label:       lastLabel,
+      last_earnings_outcome:     lastOutcome,
+      next_earnings_date:        nextDate,
+      next_earnings_status:      nextDate ? 'estimated' : 'unknown',
+      source_url: 'https://www.alphavantage.co/documentation/#earnings',
+      notes: 'source:alpha_vantage',
+    });
+  }
+
+  function normalizeManualNews(items, ticker) {
+    console.debug(`[NORMALIZE] input items: ${(items||[]).length} for ${ticker}`);
+    let dropped_relevance=0, dropped_domain=0, dropped_date=0, passed=0;
+    const out=(items||[]).map(item=>{
+      const headline=(item.headline||'').trim(), summary=(item.summary||'').trim();
+      if (!headline || !isTickerRelevant(ticker, headline, summary)) {
+        dropped_relevance++;
+        if (headline) console.debug(`[NORMALIZE] dropped (relevance): "${headline.slice(0,80)}"`);
+        return null;
+      }
+      const dom=sourceDomain(item.url||'');
+      if (['dailypolitical.com','tickerreport.com','markets.financialcontent.com'].includes(dom)) {
+        dropped_domain++; return null;
+      }
+      const event=classifyFundamental(headline,summary) || fallbackTheme(headline,summary);
+      if (!event) { console.debug(`[NORMALIZE] dropped (no theme): "${headline.slice(0,80)}"`); return null; }
+      const dt=item.published_at?new Date(item.published_at):null;
+      if (!dt||isNaN(dt.getTime())) {
+        dropped_date++;
+        console.debug(`[NORMALIZE] dropped (bad date): "${headline.slice(0,80)}" published_at=${item.published_at}`);
+        return null;
+      }
+      passed++;
+      const gptSig=(item.thesis_signal||'').toLowerCase().replace('thesis_','');
+      const thesis_signal=['breaking','confirming','watch','noise'].includes(gptSig)?gptSig:classifyThesisSignal(headline,summary,item.why_it_matters||'');
+      return {
+        headline,summary,url:item.url||'#',source:item.source||'Unknown',
+        why_it_matters:item.why_it_matters||'',datetime:dt.toISOString(),
+        theme:event.theme,theme_label:event.theme_label,priority:event.priority,
+        horizon_fit:event.horizon_fit,matched_keyword:event.matched_keyword,thesis_signal
+      };
+    }).filter(Boolean);
+    console.debug(`[NORMALIZE] done: passed=${passed}, dropped_relevance=${dropped_relevance}, dropped_date=${dropped_date}, dropped_domain=${dropped_domain}, final=${out.length}`);
+    if (passed > 0) out.slice(0,3).forEach(n => console.debug(`[NORMALIZE] kept: "${n.headline.slice(0,80)}" theme=${n.theme}`));
+    return dedupeByHeadline(out).slice(0,10);
+  }
+
+  async function fetchTickerFreeOnly(ticker) {
+    const [gdeltItems, earnings]=await Promise.all([
+      fetchGdeltNewsFree(ticker),
+      fetchAlphaEarningsFree(ticker),
+    ]);
+    return {news:normalizeManualNews(gdeltItems||[], ticker), earnings};
+  }
+
   // ── Run modes ──
   async function runDefault() {
     const res=await fetch(DATA_URL,{cache:'no-store'});
     const data=await res.json();
+
+    // Normalize thesis_signal from Python long-form (thesis_breaking/thesis_confirming)
+    // to the short-form used by rendering logic (breaking/confirming)
+    for (const row of (data.holdings||[])) {
+      for (const n of (row.fundamental_news||[])) {
+        if (n.thesis_signal) n.thesis_signal=n.thesis_signal.replace(/^thesis_/,'');
+      }
+    }
 
     const genDate=new Date(data.generated_at);
     const weekOf=getMondayOf(genDate);
@@ -981,13 +1262,42 @@
     document.getElementById('meta').textContent=`Fetching ${profile.username}…`;
     document.getElementById('summary').textContent=profile.tickers.join(' · ');
     lastCustomModelUsed=null;
+    const mode=(document.getElementById('fetch-mode').value||profile.fetch_mode||'free_only').trim();
     const apiKey=document.getElementById('openai-key').value.trim();
-    if (!apiKey) throw new Error('Missing OpenAI API key');
+    if ((mode==='hybrid'||mode==='gpt_only') && !apiKey) throw new Error('Missing OpenAI API key');
 
-    const [newsBlocks,earningsBlocks]=await Promise.all([
-      Promise.all(profile.tickers.map(t=>fetchTickerNewsWithGpt(t,apiKey))),
-      Promise.all(profile.tickers.map(t=>fetchEarningsTimelineWithGpt(t,apiKey)))
-    ]);
+    let newsBlocks=[], earningsBlocks=[];
+    if (mode==='free_only') {
+      const blocks=await Promise.all(profile.tickers.map(t=>fetchTickerFreeOnly(t)));
+      newsBlocks=blocks.map(b=>b.news||[]);
+      earningsBlocks=blocks.map(b=>b.earnings||normalizeEarningsTimeline({}));
+    } else if (mode==='gpt_only') {
+      [newsBlocks,earningsBlocks]=await Promise.all([
+        Promise.all(profile.tickers.map(t=>fetchTickerNewsWithGpt(t,apiKey))),
+        Promise.all(profile.tickers.map(t=>fetchEarningsTimelineWithGpt(t,apiKey)))
+      ]);
+    } else {
+      const freeBlocks=await Promise.all(profile.tickers.map(t=>fetchTickerFreeOnly(t)));
+      newsBlocks=profile.tickers.map((_,i)=>freeBlocks[i]?.news||[]);
+      earningsBlocks=profile.tickers.map((_,i)=>freeBlocks[i]?.earnings||normalizeEarningsTimeline({}));
+      const needs=profile.tickers.map((t,i)=>({t,i})).filter(({i})=>{
+        const freeNews=newsBlocks[i]||[];
+        const freeEarn=earningsBlocks[i]||normalizeEarningsTimeline({});
+        return freeNews.length===0 || earningsTimelineIncomplete(freeEarn);
+      });
+      if (needs.length) {
+        const gptPairs=await Promise.all(needs.map(({t})=>Promise.all([
+          fetchTickerNewsWithGpt(t,apiKey),
+          fetchEarningsTimelineWithGpt(t,apiKey),
+        ])));
+        needs.forEach(({i},k)=>{
+          const [gNews,gEarn]=gptPairs[k];
+          if ((newsBlocks[i]||[]).length===0) newsBlocks[i]=gNews||[];
+          else if ((gNews||[]).length) newsBlocks[i]=dedupeByHeadline([...(newsBlocks[i]||[]), ...gNews]).slice(0,10);
+          earningsBlocks[i]=mergeEarningsFallback(earningsBlocks[i], gEarn||normalizeEarningsTimeline({}));
+        });
+      }
+    }
 
     const rows=profile.tickers.map((ticker,i)=>{
       const fundamental_news=newsBlocks[i]||[];
@@ -999,13 +1309,24 @@
     const total=rows.reduce((a,r)=>a+(r.fundamental_news_count||0),0);
     const durable=rows.reduce((a,r)=>a+(r.durable_news_count||0),0);
     const breaking=rows.reduce((a,r)=>a+(r.fundamental_news||[]).filter(n=>['breaking','thesis_breaking'].includes(n.thesis_signal||'')).length,0);
-    document.getElementById('meta').textContent=`Manual fetch · ${new Date().toLocaleString()} · ${profile.username}`;
+    document.getElementById('meta').textContent=`Manual fetch (${mode}) · ${new Date().toLocaleString()} · ${profile.username}`;
     document.getElementById('summary').textContent=`${total} items · ${durable} durable${breaking?` · ⚡ ${breaking} breaking`:''} · ${rows.length} tickers`;
     renderCards(rows, null);
   }
 
   // ── Events ──
   function bindEvents() {
+    const modeEl=document.getElementById('fetch-mode');
+    const keyEl=document.getElementById('openai-key');
+    const syncKeyReq=()=>{
+      const mode=(modeEl.value||'free_only');
+      const needsKey=(mode==='hybrid'||mode==='gpt_only');
+      keyEl.required=needsKey;
+      keyEl.placeholder=needsKey?'OpenAI API key (required)':'OpenAI API key (optional in free mode)';
+    };
+    modeEl.addEventListener('change', syncKeyReq);
+    syncKeyReq();
+
     document.getElementById('week-select').addEventListener('change', async e => {
       const val=e.target.value;
       if (val==='current') { await runDefault(); return; }
@@ -1016,9 +1337,10 @@
       e.preventDefault();
       const username=document.getElementById('username').value.trim();
       const tickers=parseTickers(document.getElementById('tickers').value);
+      const fetch_mode=(document.getElementById('fetch-mode').value||'free_only');
       if (!username||!tickers.length) return;
       const ps=loadProfiles(), idx=ps.findIndex(p=>p.username===username);
-      const profile={username,tickers,created_at:new Date().toISOString()};
+      const profile={username,tickers,fetch_mode,created_at:new Date().toISOString()};
       if (idx>=0) ps[idx]=profile; else ps.push(profile);
       saveProfiles(ps); renderProfileOptions();
       document.getElementById('profile-select').value=username;
@@ -1030,6 +1352,8 @@
       const username=document.getElementById('profile-select').value;
       const profile=loadProfiles().find(p=>p.username===username);
       if (!profile) return;
+      document.getElementById('fetch-mode').value=profile.fetch_mode||'free_only';
+      syncKeyReq();
       try { await runProfile(profile); }
       catch(err) { document.getElementById('meta').textContent=`Fetch failed: ${err.message}`; }
     });

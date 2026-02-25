@@ -29,7 +29,7 @@ jobs:
           OPENAI_MODEL: gpt-4.1-mini
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
-          DATA_FETCH_MODE: free_only
+          DATA_FETCH_MODE: hybrid
         run: python scripts/update_stocks.py --mode weekly
 
       - name: Commit updated data

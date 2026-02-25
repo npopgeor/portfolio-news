@@ -17,6 +17,7 @@ New in this version:
 """
 import argparse
 import csv
+import gzip
 import io
 import json
 import os
@@ -27,7 +28,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.error import HTTPError
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import quote_plus, urlencode, urlparse
 from urllib.request import Request, urlopen
 
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
@@ -126,6 +127,12 @@ TRUSTED_EARNINGS_SOURCE_HINTS = [
 
 SEC_COMPANY_TICKERS_CACHE: Optional[Dict[str, Dict[str, Any]]] = None
 
+LOW_QUALITY_NEWS_DOMAINS = {
+    "dailypolitical.com",
+    "tickerreport.com",
+    "markets.financialcontent.com",
+}
+
 
 # ── Utilities ──────────────────────────────────────────────────────────────────
 
@@ -214,7 +221,11 @@ def post_json(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]
 def get_json(url: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
     req = Request(url, headers=headers or {}, method="GET")
     with urlopen(req, timeout=60, context=get_ssl_context()) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+        raw = resp.read()
+        # Some endpoints (notably SEC) may return gzip-compressed bytes.
+        if raw[:2] == b"\x1f\x8b":
+            raw = gzip.decompress(raw)
+        return json.loads(raw.decode("utf-8", errors="replace"))
 
 
 def get_text(url: str, headers: Optional[Dict[str, str]] = None) -> str:
@@ -383,6 +394,60 @@ def parse_datetime_to_iso(value: Optional[str]) -> Optional[str]:
     return None
 
 
+def extract_domain(url: str) -> str:
+    raw = (url or "").strip()
+    if not raw:
+        return ""
+    try:
+        host = (urlparse(raw).netloc or "").lower()
+    except Exception:
+        return ""
+    return host[4:] if host.startswith("www.") else host
+
+
+def ticker_aliases(ticker: str) -> set:
+    aliases = {ticker.lower()}
+    try:
+        title = str(get_sec_ticker_map().get(ticker, {}).get("title") or "").lower().strip()
+    except Exception:
+        title = ""
+    if title:
+        for suffix in [
+            " inc.", " inc", " corp.", " corp", " corporation", " ltd.", " ltd", " plc",
+            " holdings", " holding", " group", " company", " co.", " co",
+        ]:
+            if title.endswith(suffix):
+                title = title[: -len(suffix)].strip()
+        parts = [p for p in re.split(r"[^a-z0-9]+", title) if p]
+        if parts:
+            aliases.add(" ".join(parts[:2]).strip())
+            aliases.add(parts[0])
+    return {a for a in aliases if a}
+
+
+def is_relevant_to_ticker(ticker: str, headline: str, summary: str) -> bool:
+    text = f"{headline} {summary}".lower()
+    if not text.strip():
+        return False
+    aliases = ticker_aliases(ticker)
+    if ticker.lower() in text:
+        return True
+    return any(a in text for a in aliases if len(a) >= 3)
+
+
+def source_rank(src: str) -> int:
+    s = (src or "").lower()
+    if any(d in s for d in LOW_QUALITY_NEWS_DOMAINS):
+        return 0
+    if any(k in s for k in ["sec", "investor", "reuters", "bloomberg", "wsj", "ft.com"]):
+        return 6
+    if any(k in s for k in ["cnbc", "yahoo", "marketwatch", "nasdaq"]):
+        return 4
+    if s and s != "unknown":
+        return 2
+    return 1
+
+
 # ── Classification ─────────────────────────────────────────────────────────────
 
 def classify_fundamental_event(headline: str, summary: str = "") -> Optional[Dict[str, str]]:
@@ -414,6 +479,74 @@ def classify_thesis_signal_heuristic(headline: str, summary: str, why_it_matters
     if any(k in text for k in THESIS_CONFIRMING_SIGNALS):
         return "thesis_confirming"
     return "noise"
+
+
+def dedupe_event_news(items: List[Dict[str, Any]], ticker: str) -> List[Dict[str, Any]]:
+    ticker_l = ticker.lower()
+    stop = {
+        "the", "a", "an", "and", "or", "to", "of", "in", "for", "on", "with", "from",
+        "after", "amid", "as", "at", "by", "into", "over", "under", "up", "down",
+        "company", "shares", "stock", "says", "said", "reports", "report", "announces",
+        "announced", "update", "news", ticker_l,
+    }
+
+    def tokens(headline: str) -> set:
+        h = re.sub(r"[^a-z0-9\s]", " ", headline.lower())
+        h = re.sub(r"\s+", " ", h).strip()
+        out = {w for w in h.split(" ") if len(w) > 2 and w not in stop}
+        return out
+
+    def item_score(it: Dict[str, Any]) -> int:
+        score = source_rank(it.get("source") or "")
+        if (it.get("thesis_signal") or "") in {"thesis_breaking", "thesis_confirming"}:
+            score += 2
+        if (it.get("why_it_matters") or "").strip():
+            score += 1
+        if len((it.get("summary") or "").strip()) > 80:
+            score += 1
+        return score
+
+    def parse_dt(s: str) -> Optional[datetime]:
+        if not s:
+            return None
+        try:
+            return datetime.fromisoformat(str(s).replace("Z", "+00:00"))
+        except Exception:
+            return None
+
+    kept: List[Dict[str, Any]] = []
+    for item in sorted(items, key=lambda x: x.get("datetime") or "", reverse=True):
+        url = (item.get("url") or "").strip()
+        item_dt = parse_dt(item.get("datetime") or "")
+        item_toks = tokens(item.get("headline") or "")
+        replaced = False
+        duplicate = False
+        for i, prev in enumerate(kept):
+            if url and url == (prev.get("url") or "").strip():
+                duplicate = True
+                break
+            if item.get("theme") != prev.get("theme"):
+                continue
+            prev_dt = parse_dt(prev.get("datetime") or "")
+            if item_dt and prev_dt and abs((item_dt.date() - prev_dt.date()).days) > 2:
+                continue
+            prev_toks = tokens(prev.get("headline") or "")
+            if not item_toks or not prev_toks:
+                continue
+            inter = len(item_toks & prev_toks)
+            union = len(item_toks | prev_toks)
+            sim = inter / union if union else 0.0
+            if sim >= 0.72:
+                duplicate = True
+                if item_score(item) > item_score(prev):
+                    kept[i] = item
+                    replaced = True
+                break
+        if not duplicate or replaced:
+            if not replaced:
+                kept.append(item)
+    kept.sort(key=lambda x: x.get("datetime") or "", reverse=True)
+    return kept
 
 
 def normalize_news_item(item: Dict[str, Any], ticker: str) -> Optional[Dict[str, Any]]:
@@ -617,11 +750,57 @@ def reconcile_earnings_timeline_with_news(
     return normalize_earnings_timeline(reconciled, now)
 
 
+def earnings_timeline_is_incomplete(timeline: Dict[str, Any]) -> bool:
+    last_date = timeline.get("last_earnings_report_date")
+    last_outcome = (timeline.get("last_earnings_outcome") or "unknown").strip().lower()
+    next_date = timeline.get("next_earnings_date")
+    next_status = (timeline.get("next_earnings_status") or "unknown").strip().lower()
+    return (not last_date) or (last_outcome == "unknown") or (not next_date) or (next_status in {"unknown", "conflict"})
+
+
+def merge_earnings_with_fallback(primary: Dict[str, Any], fallback: Dict[str, Any], now: datetime) -> Dict[str, Any]:
+    merged = dict(primary or {})
+    p_last_date = merged.get("last_earnings_report_date")
+    p_last_out = (merged.get("last_earnings_outcome") or "unknown").strip().lower()
+    p_next_date = merged.get("next_earnings_date")
+    p_next_status = (merged.get("next_earnings_status") or "unknown").strip().lower()
+
+    if (not p_last_date) and fallback.get("last_earnings_report_date"):
+        merged["last_earnings_report_date"] = fallback.get("last_earnings_report_date")
+    if p_last_out == "unknown" and (fallback.get("last_earnings_outcome") or "unknown") != "unknown":
+        merged["last_earnings_outcome"] = fallback.get("last_earnings_outcome")
+    if (not p_next_date) and fallback.get("next_earnings_date"):
+        merged["next_earnings_date"] = fallback.get("next_earnings_date")
+    if p_next_status in {"unknown", "conflict"} and fallback.get("next_earnings_status") not in {None, "", "unknown", "conflict"}:
+        merged["next_earnings_status"] = fallback.get("next_earnings_status")
+    if not merged.get("last_earnings_label") and fallback.get("last_earnings_label"):
+        merged["last_earnings_label"] = fallback.get("last_earnings_label")
+    if not merged.get("source_url") and fallback.get("source_url"):
+        merged["source_url"] = fallback.get("source_url")
+
+    p_note = (primary.get("notes") or "").strip() if isinstance(primary, dict) else ""
+    f_note = (fallback.get("notes") or "").strip() if isinstance(fallback, dict) else ""
+    notes = "; ".join([n for n in [p_note, f_note] if n]).strip("; ")
+    if notes:
+        merged["notes"] = notes
+    return normalize_earnings_timeline(merged, now)
+
+
+def free_news_is_sparse(news_items: List[Dict[str, Any]]) -> bool:
+    min_items = max(1, int(os.getenv("HYBRID_MIN_FREE_NEWS", "3")))
+    if len(news_items) < min_items:
+        return True
+    non_sec = [n for n in news_items if (n.get("source") or "").strip().lower() != "sec"]
+    if not non_sec:
+        return True
+    non_noise = [n for n in news_items if (n.get("thesis_signal") or "").strip().lower() not in {"noise", "thesis_noise"}]
+    return len(non_noise) == 0
+
+
 def sec_headers() -> Dict[str, str]:
     ua = os.getenv("SEC_USER_AGENT", "portfolio-news-bot/1.0 (contact: admin@example.com)")
     return {
         "User-Agent": ua,
-        "Accept-Encoding": "gzip, deflate",
     }
 
 
@@ -704,7 +883,16 @@ def parse_gdelt_seendate(raw: Any) -> Optional[str]:
 
 
 def fetch_gdelt_news_items(ticker: str) -> List[Dict[str, Any]]:
-    query = f'{ticker} (earnings OR guidance OR acquisition OR merger OR lawsuit OR SEC OR investigation OR contract OR partnership OR CEO)'
+    aliases = sorted(set(ticker_aliases(ticker)) | {ticker.upper(), ticker.lower()})
+    if aliases:
+        ticker_expr = "(" + " OR ".join([f'"{a}"' for a in aliases]) + ")"
+    else:
+        ticker_expr = f'"{ticker}"'
+    query = (
+        f"{ticker_expr} AND "
+        "(earnings OR guidance OR acquisition OR merger OR lawsuit OR SEC OR investigation "
+        "OR contract OR partnership OR CEO OR revenue OR quarter OR results)"
+    )
     params = {
         "query": query,
         "mode": "ArtList",
@@ -714,7 +902,29 @@ def fetch_gdelt_news_items(ticker: str) -> List[Dict[str, Any]]:
         "timespan": "7d",
     }
     url = f"{GDELT_DOC_API_URL}?{urlencode(params, quote_via=quote_plus)}"
-    payload = get_json(url)
+    retries = max(1, int(os.getenv("GDELT_RETRIES", "3")))
+    backoff = max(0.5, float(os.getenv("GDELT_RETRY_BASE_SECONDS", "1.5")))
+    payload: Dict[str, Any] = {}
+    last_error: Optional[Exception] = None
+    for attempt in range(retries):
+        try:
+            payload = get_json(url)
+            last_error = None
+            break
+        except HTTPError as exc:
+            last_error = exc
+            if exc.code in {429, 500, 502, 503, 504} and attempt < retries - 1:
+                time.sleep(backoff * (2 ** attempt))
+                continue
+            raise
+        except Exception as exc:
+            last_error = exc
+            if attempt < retries - 1:
+                time.sleep(backoff * (2 ** attempt))
+                continue
+            break
+    if last_error is not None and not payload:
+        raise last_error
     articles = payload.get("articles", [])
     if not isinstance(articles, list):
         return []
@@ -746,53 +956,294 @@ def fetch_alpha_earnings_timeline(ticker: str, now: datetime) -> Dict[str, Any]:
     api_key = os.getenv("ALPHA_VANTAGE_API_KEY", "").strip()
     if not api_key:
         return normalize_earnings_timeline({}, now)
-    params = {
-        "function": "EARNINGS_CALENDAR",
-        "symbol": ticker,
-        "horizon": "3month",
-        "apikey": api_key,
-    }
-    url = f"{ALPHA_VANTAGE_API_URL}?{urlencode(params, quote_via=quote_plus)}"
-    raw_csv = get_text(url)
-    if not raw_csv.strip():
-        return normalize_earnings_timeline({}, now)
-    rows = list(csv.DictReader(io.StringIO(raw_csv)))
-    today = now.date()
+
+    # ── 1. Next earnings date (EARNINGS_CALENDAR, CSV) ──────────────────────
     next_date: Optional[str] = None
-    for row in rows:
-        if str(row.get("symbol", "")).strip().upper() != ticker:
-            continue
-        d = parse_date_value(row.get("reportDate"))
-        if not d:
-            continue
-        if d.date() >= today:
-            next_date = d.strftime("%Y-%m-%d")
-            break
+    try:
+        params_cal = {
+            "function": "EARNINGS_CALENDAR",
+            "symbol": ticker,
+            "horizon": "3month",
+            "apikey": api_key,
+        }
+        url_cal = f"{ALPHA_VANTAGE_API_URL}?{urlencode(params_cal, quote_via=quote_plus)}"
+        raw_csv = get_text(url_cal)
+        if raw_csv.strip():
+            for row in csv.DictReader(io.StringIO(raw_csv)):
+                if str(row.get("symbol", "")).strip().upper() != ticker:
+                    continue
+                d = parse_date_value(row.get("reportDate"))
+                if d and d.date() >= now.date():
+                    next_date = d.strftime("%Y-%m-%d")
+                    break
+    except Exception:
+        pass
+
+    # ── 2. Last earnings date + label from OVERVIEW (free endpoint) ─────────
+    # The EARNINGS endpoint is premium-only on Alpha Vantage free keys.
+    # OVERVIEW is free and provides LatestQuarter (fiscal period end date)
+    # and QuarterlyEarningsGrowthYOY which we use as a beat/miss proxy.
+    last_date: Optional[str] = None
+    last_label: Optional[str] = None
+    last_outcome: str = "unknown"
+    try:
+        params_overview = {
+            "function": "OVERVIEW",
+            "symbol": ticker,
+            "apikey": api_key,
+        }
+        url_overview = f"{ALPHA_VANTAGE_API_URL}?{urlencode(params_overview, quote_via=quote_plus)}"
+        data = get_json(url_overview)
+        latest_q = str(data.get("LatestQuarter") or "").strip()  # e.g. "2024-12-31"
+        if latest_q:
+            last_date = latest_q
+            fd = parse_date_value(latest_q)
+            if fd:
+                mo = fd.month  # 1-based
+                # Apple fiscal quarters: Q1=Oct-Dec, Q2=Jan-Mar, Q3=Apr-Jun, Q4=Jul-Sep
+                qtr_map = {12: "Q1", 3: "Q2", 6: "Q3", 9: "Q4"}
+                # Normalise: Dec→12, Mar→3, Jun→6, Sep→9
+                qtr = qtr_map.get(mo, ("Q1" if mo <= 3 else "Q2" if mo <= 6 else "Q3" if mo <= 9 else "Q4"))
+                fy  = fd.year + 1 if mo == 12 else fd.year
+                last_label = f"{qtr} FY{fy}"
+
+            # QuarterlyEarningsGrowthYOY: positive = improving = proxy for beat
+            try:
+                qeg = float(data.get("QuarterlyEarningsGrowthYOY") or "nan")
+                if qeg > 0.02:
+                    last_outcome = "beat"
+                elif qeg < -0.02:
+                    last_outcome = "miss"
+                else:
+                    last_outcome = "in_line"
+            except (ValueError, TypeError):
+                last_outcome = "unknown"
+    except Exception:
+        pass
+
     return normalize_earnings_timeline({
-        "next_earnings_date": next_date,
-        "next_earnings_status": "estimated" if next_date else "unknown",
-        "source_url": "https://www.alphavantage.co/documentation/#earnings-calendar",
+        "last_earnings_report_date": last_date,
+        "last_earnings_label":       last_label,
+        "last_earnings_outcome":     last_outcome,
+        "next_earnings_date":        next_date,
+        "next_earnings_status":      "estimated" if next_date else "unknown",
+        "source_url": "https://www.alphavantage.co/documentation/#earnings",
         "notes": "source:alpha_vantage",
     }, now)
 
 
 def merge_news_items_for_ticker(ticker: str, raw_items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def relaxed_fallback_item(row: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        headline = (row.get("headline") or "").strip()
+        if not headline:
+            return None
+        summary = (row.get("summary") or "").strip()
+        dt_iso = parse_datetime_to_iso(row.get("published_at"))
+        if not dt_iso:
+            return None
+        text = f"{headline} {summary}".lower()
+        if any(noise in text for noise in TEMPORARY_NOISE_KEYWORDS):
+            return None
+        # Broader fallback when strict keyword mapping misses otherwise relevant company items.
+        fallback_map = [
+            ("guidance", "Guidance / Outlook", "guidance"),
+            ("earnings", "Earnings Quality", "earnings"),
+            ("investigation", "Legal / Regulatory", "investigation"),
+            ("lawsuit", "Legal / Regulatory", "lawsuit"),
+            ("regulator", "Legal / Regulatory", "regulator"),
+            ("acquisition", "M&A / Strategic Deal", "acquisition"),
+            ("merger", "M&A / Strategic Deal", "merger"),
+            ("contract", "Product / Strategy", "contract"),
+            ("partnership", "Product / Strategy", "partnership"),
+            ("launch", "Product / Strategy", "launch"),
+            ("roadmap", "Product / Strategy", "roadmap"),
+            ("ceo", "Management / Governance", "ceo"),
+            ("cfo", "Management / Governance", "cfo"),
+        ]
+        theme = "product_strategy"
+        theme_label = "Product / Strategy"
+        matched = "fallback"
+        for kw, lbl, mk in fallback_map:
+            if kw in text:
+                theme = "product_strategy" if lbl == "Product / Strategy" else (
+                    "guidance" if lbl == "Guidance / Outlook" else (
+                        "earnings" if lbl == "Earnings Quality" else (
+                            "legal_regulatory" if lbl == "Legal / Regulatory" else (
+                                "merger_acquisition" if lbl == "M&A / Strategic Deal" else "management_governance"
+                            )
+                        )
+                    )
+                )
+                theme_label = lbl
+                matched = mk
+                break
+        url = (row.get("url") or "").strip()
+        source = (row.get("source") or "").strip() or "Unknown"
+        why = (row.get("why_it_matters") or "").strip() or "Company-related update from free-source fallback parsing."
+        sig = classify_thesis_signal_heuristic(headline, summary, why)
+        return {
+            "id": f"{ticker}:{url or headline[:80]}",
+            "ticker": ticker,
+            "headline": headline,
+            "summary": summary,
+            "source": source,
+            "url": url,
+            "datetime": dt_iso,
+            "theme": theme,
+            "theme_label": theme_label,
+            "priority": "medium",
+            "horizon_fit": "possible",
+            "matched_keyword": matched,
+            "thesis_signal": sig,
+            "why_it_matters": why,
+        }
+
     normalized: List[Dict[str, Any]] = []
     for row in raw_items:
         if isinstance(row, dict):
+            headline = (row.get("headline") or "").strip()
+            summary = (row.get("summary") or "").strip()
+            if not is_relevant_to_ticker(ticker, headline, summary):
+                continue
+            dom = extract_domain(str(row.get("url") or ""))
+            if dom in LOW_QUALITY_NEWS_DOMAINS:
+                continue
             item = normalize_news_item(row, ticker)
             if item:
                 normalized.append(item)
+    if not normalized:
+        for row in raw_items:
+            if isinstance(row, dict):
+                headline = (row.get("headline") or "").strip()
+                summary = (row.get("summary") or "").strip()
+                if not is_relevant_to_ticker(ticker, headline, summary):
+                    continue
+                dom = extract_domain(str(row.get("url") or ""))
+                if dom in LOW_QUALITY_NEWS_DOMAINS:
+                    continue
+                fb = relaxed_fallback_item(row)
+                if fb:
+                    normalized.append(fb)
     by_id: Dict[str, Dict[str, Any]] = {}
     for item in normalized:
         by_id[item["id"]] = item
-    merged = list(by_id.values())
+    merged = dedupe_event_news(list(by_id.values()), ticker)
     merged.sort(key=lambda x: x.get("datetime") or "", reverse=True)
     return merged[:10]
 
 
+def gpt_classify_and_dedupe_news(
+    ticker: str,
+    items: List[Dict[str, Any]],
+    api_key: str,
+    model: str,
+) -> List[Dict[str, Any]]:
+    if not api_key or not items:
+        return items
+    compact = [
+        {
+            "id": it.get("id"),
+            "headline": it.get("headline"),
+            "summary": it.get("summary"),
+            "source": it.get("source"),
+            "datetime": it.get("datetime"),
+            "theme": it.get("theme"),
+            "thesis_signal": it.get("thesis_signal"),
+            "why_it_matters": it.get("why_it_matters"),
+        }
+        for it in items
+    ]
+    system_prompt = (
+        "You are an equity-news triage assistant. You do not search the web. "
+        "Given candidate items for one ticker, decide duplicates and refine thesis_signal.\n"
+        "Rules:\n"
+        "- Keep the best representative for duplicate events across outlets.\n"
+        "- Do not invent facts; use only provided fields.\n"
+        "- thesis_signal must be one of: thesis_breaking, thesis_confirming, noise.\n"
+        "- Prefer primary/trusted sources when duplicates exist.\n"
+        "Return JSON only."
+    )
+    user_prompt = (
+        f"Ticker: {ticker}\n"
+        "Input items:\n"
+        f"{json.dumps(compact, ensure_ascii=False)}\n\n"
+        "Return exactly this JSON object:\n"
+        "{\n"
+        '  "keep_ids": ["id1", "id2"],\n'
+        '  "updates": [\n'
+        '    {"id":"id1","event_key":"short_snake_case_key","thesis_signal":"thesis_confirming","why_it_matters":"short rationale"}\n'
+        "  ]\n"
+        "}\n"
+        "Only include ids present in input. Use the same event_key for duplicate coverage of the same event."
+    )
+    payload = {
+        "input": [
+            {"role": "system", "content": [{"type": "input_text", "text": system_prompt}]},
+            {"role": "user", "content": [{"type": "input_text", "text": user_prompt}]},
+        ],
+        "max_output_tokens": 1200,
+    }
+    try:
+        resp = responses_with_fallback(payload, api_key, model)
+        parsed = parse_json_from_text(extract_output_text(resp))
+    except Exception:
+        return items
+    if not isinstance(parsed, dict):
+        return items
+
+    keep_ids_raw = parsed.get("keep_ids", [])
+    keep_ids = {str(x).strip() for x in keep_ids_raw if str(x).strip()} if isinstance(keep_ids_raw, list) else set()
+    updates_raw = parsed.get("updates", [])
+    updates = updates_raw if isinstance(updates_raw, list) else []
+    by_id = {str(it.get("id") or ""): dict(it) for it in items}
+
+    event_keys: Dict[str, str] = {}
+    for upd in updates:
+        if not isinstance(upd, dict):
+            continue
+        uid = str(upd.get("id") or "").strip()
+        if uid not in by_id:
+            continue
+        ek = str(upd.get("event_key") or "").strip().lower()
+        if ek:
+            event_keys[uid] = ek
+        sig = str(upd.get("thesis_signal") or "").strip().lower()
+        if sig in {"thesis_breaking", "thesis_confirming", "noise"}:
+            by_id[uid]["thesis_signal"] = sig
+        why = str(upd.get("why_it_matters") or "").strip()
+        if why:
+            by_id[uid]["why_it_matters"] = why
+
+    out_items = list(by_id.values())
+    if keep_ids:
+        out_items = [it for it in out_items if str(it.get("id") or "") in keep_ids]
+    if event_keys:
+        # Collapse duplicate coverage by event_key, keeping higher-quality source.
+        collapsed: Dict[str, Dict[str, Any]] = {}
+        for it in out_items:
+            iid = str(it.get("id") or "")
+            ek = event_keys.get(iid, "")
+            if not ek:
+                collapsed[f"no_key:{iid}"] = it
+                continue
+            prev = collapsed.get(ek)
+            if prev is None:
+                collapsed[ek] = it
+                continue
+            s_prev = source_rank(prev.get("source") or "")
+            s_cur = source_rank(it.get("source") or "")
+            if s_cur > s_prev:
+                collapsed[ek] = it
+        out_items = list(collapsed.values())
+    out_items.sort(key=lambda x: x.get("datetime") or "", reverse=True)
+    return out_items[:10]
+
+
 def fetch_ticker_data_from_free_sources(
-    ticker: str, now: datetime
+    ticker: str,
+    now: datetime,
+    api_key: str,
+    model: str,
 ) -> tuple:
     all_raw_news: List[Dict[str, Any]] = []
     notes: List[str] = []
@@ -812,6 +1263,14 @@ def fetch_ticker_data_from_free_sources(
         notes.append(f"gdelt_error={str(exc)[:120]}")
 
     news_items = merge_news_items_for_ticker(ticker, all_raw_news)
+    gpt_cls_enabled = os.getenv("GPT_CLASSIFIER_ENABLED", "1").strip().lower() in {"1", "true", "yes"}
+    if gpt_cls_enabled and api_key and news_items:
+        refined = gpt_classify_and_dedupe_news(ticker, news_items, api_key, model)
+        if refined:
+            news_items = refined
+        notes.append("gpt_classifier=ok")
+    else:
+        notes.append("gpt_classifier=skipped")
 
     try:
         earnings_timeline = fetch_alpha_earnings_timeline(ticker, now)
@@ -936,6 +1395,7 @@ def fetch_ticker_data_with_gpt(
                 normalized.append(item)
 
     print(f"    {ticker}: GPT returned {len(raw_news)} raw news → {len(normalized)} passed normalization")
+    normalized = dedupe_event_news(normalized, ticker)
     normalized.sort(key=lambda x: x.get("datetime") or "", reverse=True)
     news_items = normalized[:10]
 
@@ -1057,45 +1517,40 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path, data_fetch_mode: str
             free_news: List[Dict[str, Any]] = []
             free_earnings = normalize_earnings_timeline({}, now)
 
-            if fetch_mode in {"hybrid", "gpt_only"}:
+            if fetch_mode in {"hybrid", "free_only"}:
+                free_news, free_earnings = fetch_ticker_data_from_free_sources(
+                    ticker, now, api_key or "", model
+                )
+            if fetch_mode == "gpt_only":
                 gpt_news, gpt_earnings = fetch_ticker_data_with_gpt(
                     ticker, now, api_key or "", model, thesis=thesis
                 )
-            if fetch_mode in {"hybrid", "free_only"}:
-                free_news, free_earnings = fetch_ticker_data_from_free_sources(ticker, now)
+            elif fetch_mode == "hybrid":
+                need_gpt_news = free_news_is_sparse(free_news)
+                need_gpt_earnings = earnings_timeline_is_incomplete(free_earnings)
+                if need_gpt_news or need_gpt_earnings:
+                    gpt_news, gpt_earnings = fetch_ticker_data_with_gpt(
+                        ticker, now, api_key or "", model, thesis=thesis
+                    )
 
             if fetch_mode == "gpt_only":
                 ticker_news, earnings_timeline = gpt_news, gpt_earnings
             elif fetch_mode == "free_only":
                 ticker_news, earnings_timeline = free_news, free_earnings
             else:
-                # Compare and merge for higher confidence.
-                ticker_news = merge_news_items_for_ticker(ticker, gpt_news + free_news)
-                earnings_timeline = gpt_earnings
-                gpt_next = gpt_earnings.get("next_earnings_date")
-                free_next = free_earnings.get("next_earnings_date")
-                gpt_out = gpt_earnings.get("last_earnings_outcome")
-                free_out = free_earnings.get("last_earnings_outcome")
+                # Free-first hybrid: GPT fills only missing/unknown fields.
+                ticker_news = free_news if free_news else gpt_news
+                if free_news and gpt_news:
+                    ticker_news = merge_news_items_for_ticker(ticker, free_news + gpt_news)
+                earnings_timeline = merge_earnings_with_fallback(free_earnings, gpt_earnings, now)
                 consensus_bits: List[str] = [
                     f"source_mode={fetch_mode}",
                     f"gpt_news={len(gpt_news)}",
                     f"free_news={len(free_news)}",
+                    f"gpt_fallback={'yes' if (need_gpt_news or need_gpt_earnings) else 'no'}",
+                    f"free_sparse={'yes' if need_gpt_news else 'no'}",
+                    f"free_earnings_incomplete={'yes' if need_gpt_earnings else 'no'}",
                 ]
-                if gpt_next and free_next and gpt_next == free_next:
-                    earnings_timeline["next_earnings_date"] = gpt_next
-                    earnings_timeline["next_earnings_status"] = "scheduled"
-                    consensus_bits.append("next_date_consensus=match")
-                else:
-                    # No cross-source agreement -> be explicit about uncertainty.
-                    earnings_timeline["next_earnings_date"] = None
-                    earnings_timeline["next_earnings_status"] = "unknown"
-                    consensus_bits.append("next_date_consensus=none")
-
-                if gpt_out and free_out and gpt_out == free_out and gpt_out != "unknown":
-                    consensus_bits.append("outcome_consensus=match")
-                else:
-                    consensus_bits.append("outcome_consensus=mixed")
-
                 note = (earnings_timeline.get("notes") or "").strip()
                 earnings_timeline["notes"] = ("; ".join([note, "; ".join(consensus_bits)]).strip("; ")).strip() or None
                 earnings_timeline = reconcile_earnings_timeline_with_news(earnings_timeline, ticker_news, now)
