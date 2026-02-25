@@ -454,6 +454,7 @@ def fetch_earnings_timeline_with_gpt(
     )
     payload = {
         "tools": [{"type": "web_search_preview"}],
+        "response_format": {"type": "json_object"},
         "input": [
             {"role": "system", "content": [{"type": "input_text", "text": system_prompt}]},
             {"role": "user", "content": [{"type": "input_text", "text": user_prompt}]},
@@ -515,7 +516,7 @@ def fetch_ticker_news_with_gpt(
             "Think: regulatory bans, business model disruption, loss of a key market, fraud, "
             "major strategic reversal, existential competitive threat, or a landmark win that "
             "dramatically and durably expands the company's moat. "
-            "If nothing material happened in the last 24 hours, return an empty JSON array []. "
+            "If nothing material happened in the last 24 hours, return an empty object with items=[] (i.e., items is an empty array). "
             "Respond with JSON only — no prose, no markdown."
         )
         user_prompt = (
@@ -553,6 +554,7 @@ def fetch_ticker_news_with_gpt(
 
     payload = {
         "tools": [{"type": "web_search_preview"}],
+        "response_format": {"type": "json_object"},
         "input": [
             {"role": "system", "content": [{"type": "input_text", "text": system_prompt}]},
             {"role": "user", "content": [{"type": "input_text", "text": user_prompt}]},
@@ -562,9 +564,8 @@ def fetch_ticker_news_with_gpt(
 
     resp = responses_with_fallback(payload, api_key, model)
     text = extract_output_text(resp)
-    raw = parse_json_from_text(text)
-    if isinstance(raw, dict):
-        raw = raw.get("items", [])
+    obj = parse_json_object_from_text(text)
+    raw = obj.get("items", [])
     if not isinstance(raw, list):
         return []
 
