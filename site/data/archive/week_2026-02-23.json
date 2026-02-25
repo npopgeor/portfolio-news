@@ -1,25 +1,6 @@
 {
-  "generated_at": "2026-02-25T05:37:24.095485+00:00",
-  "mode": "weekly",
-  "model": "gpt-4.1-mini",
-  "tickers": [
-    "RKLB",
-    "RDDT",
-    "AXON",
-    "IREN",
-    "LUNR",
-    "PONY",
-    "MU",
-    "CRWD",
-    "PL"
-  ],
-  "summary": {
-    "fundamental_item_count": 0,
-    "durable_item_count": 0,
-    "thesis_breaking_count": 0,
-    "tickers_with_changes": 0,
-    "tickers_without_changes": 9
-  },
+  "snapshot_date": "2026-02-25T05:37:24.095485+00:00",
+  "week_starting": "2026-02-23",
   "holdings": [
     {
       "ticker": "RKLB",
@@ -192,9 +173,5 @@
         "notes": "Planet Labs PBC (PL) reported Q3 2026 earnings on December 10, 2025, with an EPS of -$0.19, missing analyst estimates of -$0.07. The next earnings report is estimated for March 19, 2026, with an expected EPS of -$0.04."
       }
     }
-  ],
-  "news_counts": {
-    "current": 9,
-    "archive": 1
-  }
+  ]
 }
