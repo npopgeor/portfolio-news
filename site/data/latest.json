@@ -1,0 +1,493 @@
+{
+  "generated_at": "2026-02-25T17:48:35.834776+00:00",
+  "mode": "weekly",
+  "model": "gpt-4.1-mini",
+  "data_fetch_mode": "free_only",
+  "tickers": [
+    "RKLB",
+    "RDDT",
+    "AXON",
+    "IREN",
+    "LUNR",
+    "PONY",
+    "MU",
+    "CRWD",
+    "PL"
+  ],
+  "summary": {
+    "fundamental_item_count": 17,
+    "durable_item_count": 0,
+    "thesis_breaking_count": 0,
+    "tickers_with_changes": 5,
+    "tickers_without_changes": 4
+  },
+  "holdings": [
+    {
+      "ticker": "AXON",
+      "thesis": null,
+      "fundamental_news": [
+        {
+          "id": "AXON:https://www.dailypolitical.com/2026/02/25/axon-enterprise-nasdaqaxon-shares-gap-up-on-earnings-beat.html",
+          "ticker": "AXON",
+          "headline": "Axon Enterprise ( NASDAQ : AXON ) Shares Gap Up on Earnings Beat",
+          "summary": "",
+          "source": "dailypolitical.com",
+          "url": "https://www.dailypolitical.com/2026/02/25/axon-enterprise-nasdaqaxon-shares-gap-up-on-earnings-beat.html",
+          "datetime": "2026-02-25T16:00:00+00:00",
+          "theme": "earnings",
+          "theme_label": "Earnings Quality",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "earnings",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        },
+        {
+          "id": "AXON:https://markets.financialcontent.com/stocks/article/marketminute-2026-2-25-axon-shakes-the-safety-tech-market-with-explosive-q4-earnings-ai-and-subscriptions-drive-39-revenue-surge",
+          "ticker": "AXON",
+          "headline": "FinancialContent - Axon Shakes the Safety - Tech Market with Explosive Q4 Earnings : AI and Subscriptions Drive 39 % Revenue Surge",
+          "summary": "https://marketminute.ghost.io/content/images/size/w1200/2026/02/2e33ef8b-9d77-4165-9eb9-ef7fa70222e9.png",
+          "source": "markets.financialcontent.com",
+          "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-2-25-axon-shakes-the-safety-tech-market-with-explosive-q4-earnings-ai-and-subscriptions-drive-39-revenue-surge",
+          "datetime": "2026-02-25T15:45:00+00:00",
+          "theme": "earnings",
+          "theme_label": "Earnings Quality",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "earnings",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        },
+        {
+          "id": "AXON:https://www.tickerreport.com/banking-finance/13357234/axon-enterprise-q4-earnings-call-highlights.html",
+          "ticker": "AXON",
+          "headline": "Axon Enterprise Q4 Earnings Call Highlights",
+          "summary": "",
+          "source": "tickerreport.com",
+          "url": "https://www.tickerreport.com/banking-finance/13357234/axon-enterprise-q4-earnings-call-highlights.html",
+          "datetime": "2026-02-25T04:00:00+00:00",
+          "theme": "earnings",
+          "theme_label": "Earnings Quality",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "earnings",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        },
+        {
+          "id": "AXON:https://www.dailypolitical.com/2026/02/24/axon-enterprise-q4-earnings-call-highlights.html",
+          "ticker": "AXON",
+          "headline": "Axon Enterprise Q4 Earnings Call Highlights",
+          "summary": "",
+          "source": "dailypolitical.com",
+          "url": "https://www.dailypolitical.com/2026/02/24/axon-enterprise-q4-earnings-call-highlights.html",
+          "datetime": "2026-02-25T04:00:00+00:00",
+          "theme": "earnings",
+          "theme_label": "Earnings Quality",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "earnings",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        },
+        {
+          "id": "AXON:https://markets.financialcontent.com/stocks/article/stockstory-2026-2-24-axon-nasdaqaxon-beats-expectations-in-strong-q4-cy2025-stock-jumps-151",
+          "ticker": "AXON",
+          "headline": "FinancialContent - Axon ( NASDAQ : AXON ) Beats Expectations in Strong Q4 CY2025 , Stock Jumps 15 . 1 %",
+          "summary": "https://news-assets.stockstory.org/cover-images/axon-cover-image-f068626f3e49_2024-06-06-125550_ofdd.jpeg",
+          "source": "markets.financialcontent.com",
+          "url": "https://markets.financialcontent.com/stocks/article/stockstory-2026-2-24-axon-nasdaqaxon-beats-expectations-in-strong-q4-cy2025-stock-jumps-151",
+          "datetime": "2026-02-24T22:15:00+00:00",
+          "theme": "earnings",
+          "theme_label": "Earnings Quality",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "beat",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        },
+        {
+          "id": "AXON:https://finance.yahoo.com/news/nvidia-earnings-scotus-tariff-fallout-geopolitical-tensions-rise-what-to-watch-this-week-124717965.html",
+          "ticker": "AXON",
+          "headline": "Nvidia earnings , SCOTUS tariff fallout , geopolitical tensions rise : What to watch this week",
+          "summary": "https://s.yimg.com/ny/api/res/1.2/rfnm1B7_dydWWUoRlWkO_w--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD04MDA-/https://d29szjachogqwa.cloudfront.net/images/2026-01/a8c7a6f7-982c-4a41-8302-e1330e0704e3",
+          "source": "finance.yahoo.com",
+          "url": "https://finance.yahoo.com/news/nvidia-earnings-scotus-tariff-fallout-geopolitical-tensions-rise-what-to-watch-this-week-124717965.html",
+          "datetime": "2026-02-22T13:15:00+00:00",
+          "theme": "earnings",
+          "theme_label": "Earnings Quality",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "earnings",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        },
+        {
+          "id": "AXON:https://www.santafenewmexican.com/news/local_news/city-of-santa-fe-faces-new-lawsuit-allowing-public-records-law-violations/article_81aeec2d-f4dc-4167-9ef2-e86547b4a99a.html",
+          "ticker": "AXON",
+          "headline": "City of Santa Fe faces new lawsuit allowing public records law violations",
+          "summary": "https://bloximages.newyork1.vip.townnews.com/santafenewmexican.com/content/tncms/assets/v3/editorial/5/c0/5c0b4521-3b07-4e5b-b08a-0eec10629263/682bd6269a546.image.png?crop=1500%2C788%2C0%2C141",
+          "source": "santafenewmexican.com",
+          "url": "https://www.santafenewmexican.com/news/local_news/city-of-santa-fe-faces-new-lawsuit-allowing-public-records-law-violations/article_81aeec2d-f4dc-4167-9ef2-e86547b4a99a.html",
+          "datetime": "2026-02-21T05:30:00+00:00",
+          "theme": "legal_regulatory",
+          "theme_label": "Legal / Regulatory",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "lawsuit",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        }
+      ],
+      "fundamental_news_count": 7,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {
+        "Earnings Quality": 6,
+        "Legal / Regulatory": 1
+      },
+      "earnings_timeline": {
+        "last_earnings_report_date": "2026-02-25",
+        "last_earnings_label": null,
+        "last_earnings_outcome": "beat",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": "https://www.alphavantage.co/documentation/#earnings-calendar",
+        "notes": "source:alpha_vantage; reconciled_from_news; sec_error='utf-8' codec can't decode byte 0x8b in position 1: invalid start byte; gdelt_news=40; alpha=ok"
+      }
+    },
+    {
+      "ticker": "CRWD",
+      "thesis": null,
+      "fundamental_news": [
+        {
+          "id": "CRWD:https://www.investopedia.com/stock-market-today-dow-jones-s-and-p-500-02242026-11912762",
+          "ticker": "CRWD",
+          "headline": "Stock Market Today : Futures Little Changed After Indexes Tumble on Tariff Uncertainty , AI Disruption Concerns ; AMD Stock Soars on Meta Chips Deal",
+          "summary": "https://www.investopedia.com/thmb/jyusfLZWhZjeAlR8IQU76dacDIY=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-2261788603-285dd19cfc2d49e1bcef148e2d9048a3.jpg",
+          "source": "investopedia.com",
+          "url": "https://www.investopedia.com/stock-market-today-dow-jones-s-and-p-500-02242026-11912762",
+          "datetime": "2026-02-24T13:30:00+00:00",
+          "theme": "merger_acquisition",
+          "theme_label": "M&A / Strategic Deal",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "deal",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        },
+        {
+          "id": "CRWD:https://www.proactiveinvestors.com/companies/news/1087792/anthropic-s-claude-code-security-launch-rattles-cybersecurity-stocks-wedbush-sees-selloff-as-overreaction-1087792.html",
+          "ticker": "CRWD",
+          "headline": "Anthropic Claude Code Security launch rattles cybersecurity stocks , Wedbush sees selloff as overreaction",
+          "summary": "https://cdn.proactiveinvestors.com/eyJidWNrZXQiOiJwYS1jZG4iLCJrZXkiOiJ1cGxvYWRcL05ld3NcL0ltYWdlXC8yMDI2XzAyXC9zaHV0dGVyc3RvY2stNjQ1NzMyMzAxLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6MTIwMCwiaGVpZ2h0Ijo2MzAsImZpdCI6ImNvdmVyIn19fQ==",
+          "source": "proactiveinvestors.com",
+          "url": "https://www.proactiveinvestors.com/companies/news/1087792/anthropic-s-claude-code-security-launch-rattles-cybersecurity-stocks-wedbush-sees-selloff-as-overreaction-1087792.html",
+          "datetime": "2026-02-24T00:15:00+00:00",
+          "theme": "legal_regulatory",
+          "theme_label": "Legal / Regulatory",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "sec",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        },
+        {
+          "id": "CRWD:https://markets.financialcontent.com/stocks/article/marketminute-2026-2-19-the-platformization-tax-palo-alto-networks-shares-slide-on-tightening-2026-profit-margins-and-massive-acquisition-costs",
+          "ticker": "CRWD",
+          "headline": "FinancialContent - The Platformization Tax : Palo Alto Networks Shares Slide on Tightening 2026 Profit Margins and Massive Acquisition Costs",
+          "summary": "https://marketminute.ghost.io/content/images/size/w1200/2026/02/7da62aee-0268-401d-a62e-f59e260d3c70.png",
+          "source": "markets.financialcontent.com",
+          "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-2-19-the-platformization-tax-palo-alto-networks-shares-slide-on-tightening-2026-profit-margins-and-massive-acquisition-costs",
+          "datetime": "2026-02-19T22:45:00+00:00",
+          "theme": "earnings",
+          "theme_label": "Earnings Quality",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "margin",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        },
+        {
+          "id": "CRWD:https://finance.yahoo.com/news/experts-see-big-gains-ahead-184641399.html",
+          "ticker": "CRWD",
+          "headline": "These Experts See Big Gains Ahead for a Set of Cybersecurity Stocks . Here Why",
+          "summary": "https://s.yimg.com/ny/api/res/1.2/XVgxN7h_1q0dySuBxLYDMQ--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD04MDA-/https://media.zenfs.com/en/investopedia_245/a0787766ff8ee7b9be4e65b4791eb645",
+          "source": "finance.yahoo.com",
+          "url": "https://finance.yahoo.com/news/experts-see-big-gains-ahead-184641399.html",
+          "datetime": "2026-02-19T07:00:00+00:00",
+          "theme": "legal_regulatory",
+          "theme_label": "Legal / Regulatory",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "sec",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        }
+      ],
+      "fundamental_news_count": 4,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {
+        "M&A / Strategic Deal": 1,
+        "Legal / Regulatory": 2,
+        "Earnings Quality": 1
+      },
+      "earnings_timeline": {
+        "last_earnings_report_date": "2026-02-19",
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": "https://www.alphavantage.co/documentation/#earnings-calendar",
+        "notes": "source:alpha_vantage; sec_error='utf-8' codec can't decode byte 0x8b in position 1: invalid start byte; gdelt_news=13; alpha=ok"
+      }
+    },
+    {
+      "ticker": "IREN",
+      "thesis": null,
+      "fundamental_news": [
+        {
+          "id": "IREN:https://www.banklesstimes.com/articles/2026/02/23/nvidia-stock-price-forecast-flashes-alarming-signal-ahead-of-earnings/",
+          "ticker": "IREN",
+          "headline": "NVIDIA Stock Price Forecast : Flashes Alarming Signal Ahead of Earnings",
+          "summary": "https://cdn.banklesstimes.com/bt/content/uploads/2026/02/nvidia.png",
+          "source": "banklesstimes.com",
+          "url": "https://www.banklesstimes.com/articles/2026/02/23/nvidia-stock-price-forecast-flashes-alarming-signal-ahead-of-earnings/",
+          "datetime": "2026-02-23T18:45:00+00:00",
+          "theme": "guidance",
+          "theme_label": "Guidance / Outlook",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "forecast",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        },
+        {
+          "id": "IREN:https://www.benzinga.com/markets/equities/26/02/50772921/eric-jackson-says-coreweaves-leverage-could-threaten-shareholders-if-ai-demand-slows",
+          "ticker": "IREN",
+          "headline": "Eric Jackson Says CoreWeave Leverage Could Threaten Shareholders If AI Demand Slows - CoreWeave ( NASDAQ : CRWV )",
+          "summary": "https://cdn.benzinga.com/files/images/story/2026/02/23/14-2B-Meta-Deal-Secured.jpeg?&fit=crop",
+          "source": "benzinga.com",
+          "url": "https://www.benzinga.com/markets/equities/26/02/50772921/eric-jackson-says-coreweaves-leverage-could-threaten-shareholders-if-ai-demand-slows",
+          "datetime": "2026-02-23T09:30:00+00:00",
+          "theme": "legal_regulatory",
+          "theme_label": "Legal / Regulatory",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "sec",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        },
+        {
+          "id": "IREN:https://www.coindesk.com/business/2026/02/18/bitcoin-miner-riot-platforms-stock-jumps-nearly-7-as-starboard-urges-ai-data-center-expansion",
+          "ticker": "IREN",
+          "headline": "Riot stock jumps roughly 7 % as Starboard pushes $1 . 6 billion AI data center shift",
+          "summary": "https://cdn.sanity.io/images/s3y3vcno/production/a944f5c40b9f1fece6ecb4c387377f37ae7134cc-1920x1080.jpg?auto=format&crop=focalpoint&fit=clip&q=75&fm=jpg",
+          "source": "coindesk.com",
+          "url": "https://www.coindesk.com/business/2026/02/18/bitcoin-miner-riot-platforms-stock-jumps-nearly-7-as-starboard-urges-ai-data-center-expansion",
+          "datetime": "2026-02-18T20:00:00+00:00",
+          "theme": "management_governance",
+          "theme_label": "Management / Governance",
+          "priority": "medium",
+          "horizon_fit": "possible",
+          "matched_keyword": "board",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        }
+      ],
+      "fundamental_news_count": 3,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {
+        "Guidance / Outlook": 1,
+        "Legal / Regulatory": 1,
+        "Management / Governance": 1
+      },
+      "earnings_timeline": {
+        "last_earnings_report_date": "2026-02-23",
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": "https://www.alphavantage.co/documentation/#earnings-calendar",
+        "notes": "source:alpha_vantage; sec_error='utf-8' codec can't decode byte 0x8b in position 1: invalid start byte; gdelt_news=8; alpha=ok"
+      }
+    },
+    {
+      "ticker": "PONY",
+      "thesis": null,
+      "fundamental_news": [
+        {
+          "id": "PONY:https://kdhnews.com/news/region/bell-county-approves-more-than-1-2-million-in-professional-contracts/article_dc49a9ec-b3ab-5fce-a241-d92052958fc3.html",
+          "ticker": "PONY",
+          "headline": "Bell County approves more than $1 . 2 million in professional contracts",
+          "summary": "https://bloximages.newyork1.vip.townnews.com/kdhnews.com/content/tncms/assets/v3/editorial/1/bb/1bb97931-f922-5ed4-994b-1598e9fe3d2e/699ccdf9a53e5.image.jpg?crop=267%2C267%2C66%2C0",
+          "source": "kdhnews.com",
+          "url": "https://kdhnews.com/news/region/bell-county-approves-more-than-1-2-million-in-professional-contracts/article_dc49a9ec-b3ab-5fce-a241-d92052958fc3.html",
+          "datetime": "2026-02-24T16:00:00+00:00",
+          "theme": "product_strategy",
+          "theme_label": "Product / Strategy",
+          "priority": "medium",
+          "horizon_fit": "possible",
+          "matched_keyword": "contract",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        },
+        {
+          "id": "PONY:https://www.horseandhound.co.uk/racing/pony-racing-skelton-scholarship-917121",
+          "ticker": "PONY",
+          "headline": "Harry Skelton launches scholarship to help young riders",
+          "summary": "https://keyassets.timeincuk.net/inspirewp/live/wp-content/uploads/sites/14/2026/02/GettyImages-2250129280.jpg",
+          "source": "horseandhound.co.uk",
+          "url": "https://www.horseandhound.co.uk/racing/pony-racing-skelton-scholarship-917121",
+          "datetime": "2026-02-23T19:30:00+00:00",
+          "theme": "product_strategy",
+          "theme_label": "Product / Strategy",
+          "priority": "medium",
+          "horizon_fit": "possible",
+          "matched_keyword": "launch",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        }
+      ],
+      "fundamental_news_count": 2,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {
+        "Product / Strategy": 2
+      },
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": "https://www.alphavantage.co/documentation/#earnings-calendar",
+        "notes": "source:alpha_vantage; sec_error='utf-8' codec can't decode byte 0x8b in position 1: invalid start byte; gdelt_news=50; alpha=ok"
+      }
+    },
+    {
+      "ticker": "LUNR",
+      "thesis": null,
+      "fundamental_news": [
+        {
+          "id": "LUNR:https://www.manilatimes.net/2026/02/25/tmt-newswire/globenewswire/intuitive-machines-announces-date-for-fourth-quarter-full-year-2025-financial-results-and-post-lanteris-space-systems-acquisition-conference-call/2284549",
+          "ticker": "LUNR",
+          "headline": "Intuitive Machines Announces Date for Fourth Quarter , Full - Year 2025 Financial Results , and Post - Lanteris Space Systems Acquisition Conference Call",
+          "summary": "https://www.manilatimes.net/manilatimes/uploads/images/2026/02/25/950107.png",
+          "source": "manilatimes.net",
+          "url": "https://www.manilatimes.net/2026/02/25/tmt-newswire/globenewswire/intuitive-machines-announces-date-for-fourth-quarter-full-year-2025-financial-results-and-post-lanteris-space-systems-acquisition-conference-call/2284549",
+          "datetime": "2026-02-25T04:00:00+00:00",
+          "theme": "merger_acquisition",
+          "theme_label": "M&A / Strategic Deal",
+          "priority": "high",
+          "horizon_fit": "possible",
+          "matched_keyword": "acquisition",
+          "thesis_signal": "noise",
+          "why_it_matters": "Cross-source media signal from GDELT."
+        }
+      ],
+      "fundamental_news_count": 1,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {
+        "M&A / Strategic Deal": 1
+      },
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": "https://www.alphavantage.co/documentation/#earnings-calendar",
+        "notes": "source:alpha_vantage; sec_error='utf-8' codec can't decode byte 0x8b in position 1: invalid start byte; gdelt_news=2; alpha=ok"
+      }
+    },
+    {
+      "ticker": "RKLB",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": "https://www.alphavantage.co/documentation/#earnings-calendar",
+        "notes": "source:alpha_vantage; sec_error='utf-8' codec can't decode byte 0x8b in position 1: invalid start byte; gdelt_error=HTTP Error 429: Too Many Requests; alpha=ok"
+      }
+    },
+    {
+      "ticker": "RDDT",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": "https://www.alphavantage.co/documentation/#earnings-calendar",
+        "notes": "source:alpha_vantage; sec_error='utf-8' codec can't decode byte 0x8b in position 1: invalid start byte; gdelt_news=5; alpha=ok"
+      }
+    },
+    {
+      "ticker": "MU",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": "https://www.alphavantage.co/documentation/#earnings-calendar",
+        "notes": "source:alpha_vantage; sec_error='utf-8' codec can't decode byte 0x8b in position 1: invalid start byte; gdelt_error=Expecting value: line 1 column 1 (char 0); alpha=ok"
+      }
+    },
+    {
+      "ticker": "PL",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": "https://www.alphavantage.co/documentation/#earnings-calendar",
+        "notes": "source:alpha_vantage; sec_error='utf-8' codec can't decode byte 0x8b in position 1: invalid start byte; gdelt_error=HTTP Error 429: Too Many Requests; alpha=ok"
+      }
+    }
+  ],
+  "news_counts": {
+    "current": 17,
+    "archive": 0
+  }
+}
