@@ -30,7 +30,8 @@ from urllib.request import Request, urlopen
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
 CURRENT_NEWS_DAYS = 14
 ARCHIVE_RETENTION_DAYS = 365
-PRIMARY_MODEL = "gpt-4.1-mini"
+PRIMARY_MODEL = "gpt-4o-mini-search-preview"
+FALLBACK_MODEL = "gpt-4o-search-preview"
 
 THEME_RULES = {
     "guidance": {
@@ -76,8 +77,8 @@ THEME_RULES = {
 }
 
 TEMPORARY_NOISE_KEYWORDS = [
-    "daily", "intraday", "today", "technical", "chart", "rally", "dip",
-    "overbought", "oversold", "short squeeze", "options activity", "price target", "rumor",
+    "daily", "intraday", "technical", "overbought", "oversold",
+    "short squeeze", "options activity", "price target", "rumor",
 ]
 
 DURABLE_BOOST_KEYWORDS = [
@@ -191,33 +192,36 @@ def responses_with_fallback(payload: Dict[str, Any], api_key: str, preferred_mod
     errors: List[str] = []
     retry_attempts = max(1, int(os.getenv("OPENAI_RETRY_ATTEMPTS", "3")))
     retry_base_seconds = max(0.5, float(os.getenv("OPENAI_RETRY_BASE_SECONDS", "1.5")))
-    model = preferred_model
-    for attempt in range(retry_attempts):
-        try:
-            candidate_payload = dict(payload)
-            candidate_payload["model"] = model
-            resp = post_json(OPENAI_RESPONSES_URL, candidate_payload, api_key)
-            resp["_model_used"] = model
-            return resp
-        except HTTPError as exc:
-            body = ""
+    models_to_try = [preferred_model]
+    if preferred_model != FALLBACK_MODEL:
+        models_to_try.append(FALLBACK_MODEL)
+    for model in models_to_try:
+        for attempt in range(retry_attempts):
             try:
-                body = exc.read().decode("utf-8", errors="replace").strip()
-            except Exception:
+                candidate_payload = dict(payload)
+                candidate_payload["model"] = model
+                resp = post_json(OPENAI_RESPONSES_URL, candidate_payload, api_key)
+                resp["_model_used"] = model
+                return resp
+            except HTTPError as exc:
                 body = ""
-            detail = body or str(exc)
-            errors.append(f"{model}: HTTP {exc.code}: {detail}")
-            if exc.code in {429, 500, 502, 503, 504} and attempt < retry_attempts - 1:
-                time.sleep(retry_base_seconds * (2 ** attempt))
-                continue
-            break
-        except Exception as exc:
-            text = str(exc)
-            errors.append(f"{model}: {text}")
-            if "timed out" in text.lower() and attempt < retry_attempts - 1:
-                time.sleep(retry_base_seconds * (2 ** attempt))
-                continue
-            break
+                try:
+                    body = exc.read().decode("utf-8", errors="replace").strip()
+                except Exception:
+                    body = ""
+                detail = body or str(exc)
+                errors.append(f"{model}: HTTP {exc.code}: {detail}")
+                if exc.code in {429, 500, 502, 503, 504} and attempt < retry_attempts - 1:
+                    time.sleep(retry_base_seconds * (2 ** attempt))
+                    continue
+                break
+            except Exception as exc:
+                text = str(exc)
+                errors.append(f"{model}: {text}")
+                if "timed out" in text.lower() and attempt < retry_attempts - 1:
+                    time.sleep(retry_base_seconds * (2 ** attempt))
+                    continue
+                break
     raise RuntimeError("OpenAI Responses request failed. Tried: " + " | ".join(errors))
 
 
@@ -329,9 +333,18 @@ def parse_datetime_to_iso(value: Optional[str]) -> Optional[str]:
     candidates = [raw, raw.replace("Z", "+00:00")] if raw.endswith("Z") else [raw]
     for c in candidates:
         try:
-            return iso(datetime.fromisoformat(c))
+            dt = datetime.fromisoformat(c)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return iso(dt)
         except ValueError:
             pass
+    # Last resort: plain date string e.g. "2026-02-24"
+    try:
+        dt = datetime.strptime(raw[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        return iso(dt)
+    except ValueError:
+        pass
     return None
 
 
@@ -386,9 +399,16 @@ def normalize_news_item(item: Dict[str, Any], ticker: str) -> Optional[Dict[str,
     source = (item.get("source") or "").strip() or "Unknown"
     why = (item.get("why_it_matters") or "").strip()
 
-    # Prefer GPT-supplied thesis_signal; fall back to heuristic
-    gpt_signal = (item.get("thesis_signal") or "").strip().lower()
-    if gpt_signal not in {"thesis_breaking", "thesis_confirming", "noise"}:
+    # Prefer GPT-supplied thesis_signal; accept both short and long forms
+    _signal_aliases = {
+        "breaking": "thesis_breaking",
+        "confirming": "thesis_confirming",
+        "thesis_breaking": "thesis_breaking",
+        "thesis_confirming": "thesis_confirming",
+        "noise": "noise",
+    }
+    gpt_signal = _signal_aliases.get((item.get("thesis_signal") or "").strip().lower(), "")
+    if not gpt_signal:
         gpt_signal = classify_thesis_signal_heuristic(headline, summary, why)
 
     return {
@@ -451,72 +471,18 @@ def normalize_earnings_timeline(timeline: Dict[str, Any], now: datetime) -> Dict
     }
 
 
-def fetch_earnings_timeline_with_gpt(
-    ticker: str, now: datetime, api_key: str, model: str,
-) -> Dict[str, Any]:
-    system_prompt = (
-        "You are a financial research assistant. Search the web and return earnings timeline dates for the ticker. "
-        "Use company investor relations, exchange, or trusted finance calendars when possible. "
-        "Respond with exactly one JSON object and no markdown."
-    )
-    user_prompt = (
-        f"Ticker: {ticker}\n"
-        f"Today (UTC): {now.date().isoformat()}\n"
-        "Return exactly this JSON object schema:\n"
-        "- last_earnings_report_date (YYYY-MM-DD or null)\n"
-        "- last_earnings_label (e.g., Q4 2025 or FY2025 Q4, else null)\n"
-        "- last_earnings_outcome (one of: beat, miss, in_line, unknown — "
-        "did the most recent quarter beat, miss, or meet analyst EPS/revenue estimates?)\n"
-        "- next_earnings_date (YYYY-MM-DD or null)\n"
-        "- next_earnings_status (scheduled|estimated|unknown)\n"
-        "- source_url (best source used, else null)\n"
-        "- notes (short text)\n"
-        "Prefer the newest source publication or IR page."
-    )
-    payload = {
-        "tools": [{"type": "web_search_preview"}],
-        "input": [
-            {"role": "system", "content": [{"type": "input_text", "text": system_prompt}]},
-            {"role": "user", "content": [{"type": "input_text", "text": user_prompt}]},
-        ],
-        "max_output_tokens": 900,
-    }
-    try:
-        resp = responses_with_fallback(payload, api_key, model)
-        text = extract_output_text(resp)
-        obj = parse_json_object_from_text(text)
-    except Exception:
-        obj = {}
-
-    raw = {
-        "last_earnings_report_date": pick_value(obj, ["last_earnings_report_date", "last_report_date", "last_earnings_date"], None),
-        "last_earnings_label": pick_value(obj, ["last_earnings_label", "last_quarter_label"], None),
-        "last_earnings_outcome": pick_value(obj, ["last_earnings_outcome", "earnings_outcome", "outcome"], "unknown"),
-        "next_earnings_date": pick_value(obj, ["next_earnings_date", "next_report_date", "upcoming_earnings_date"], None),
-        "next_earnings_status": pick_value(obj, ["next_earnings_status", "next_report_status"], "unknown"),
-        "source_url": pick_value(obj, ["source_url", "earnings_source_url", "url"], None),
-        "notes": pick_value(obj, ["notes", "note"], None),
-    }
-    return normalize_earnings_timeline(raw, now)
-
-
-# ── News fetching ──────────────────────────────────────────────────────────────
-
-def fetch_ticker_news_with_gpt(
+def fetch_ticker_data_with_gpt(
     ticker: str,
-    mode: str,
     now: datetime,
     api_key: str,
     model: str,
     thesis: Optional[str] = None,
-) -> List[Dict[str, Any]]:
+) -> tuple:
     """
-    Weekly mode: broad 7-day sweep of all fundamental news, with thesis_signal on each item.
-    Daily mode:  aggressive 24h scan — only surfaces thesis_breaking / thesis_confirming.
-                 Returns [] if nothing material happened.
+    Single API call per ticker — returns (news_items, earnings_timeline).
+    Fetches the last 7 days of fundamental news AND earnings timeline in one shot.
     """
-    days = 1 if mode == "daily" else 7
-    from_date = (now - timedelta(days=days)).date().isoformat()
+    from_date = (now - timedelta(days=7)).date().isoformat()
     to_date = now.date().isoformat()
 
     thesis_context = (
@@ -528,49 +494,46 @@ def fetch_ticker_news_with_gpt(
         )
     )
 
-    if mode == "daily":
-        system_prompt = (
-            "You are a senior equity analyst watching for thesis-level changes for long-term investors. "
-            "You only flag news that could force a 2-year holder to reconsider their position — "
-            "NOT earnings beats/misses, analyst upgrades, routine updates, or daily price moves. "
-            "Think: regulatory bans, business model disruption, loss of a key market, fraud, "
-            "major strategic reversal, existential competitive threat, or a landmark win that "
-            "dramatically and durably expands the company's moat. "
-            "If nothing material happened in the last 24 hours, return an empty object with items=[] (i.e., items is an empty array). "
-            "Respond with JSON only — no prose, no markdown."
-        )
-        user_prompt = (
-            f"Ticker: {ticker}\n"
-            f"Date window: {from_date} to {to_date} (last 24 hours)\n"
-            f"{thesis_context}"
-            "Return a JSON array. Each item must have: "
-            "headline, summary, source, url, published_at (ISO), why_it_matters, "
-            "thesis_signal (thesis_breaking | thesis_confirming).\n"
-            "Only include items that would make a long-term holder take action. "
-            "If nothing qualifies, return []."
-        )
-        max_tokens = 1400
-    else:
-        system_prompt = (
-            "You are a market research analyst. Search the web and return company-news events that could "
-            "affect a 2-year investment thesis. Exclude short-term price chatter, analyst price targets, "
-            "and technical commentary. "
-            "For each item, evaluate thesis_signal: thesis_breaking (story has fundamentally changed for worse), "
-            "thesis_confirming (story is strengthening), or noise (relevant but doesn't change the thesis). "
-            "Respond with JSON only."
-        )
-        user_prompt = (
-            f"Ticker: {ticker}\n"
-            f"Date window: {from_date} to {to_date}\n"
-            f"{thesis_context}"
-            "Return a JSON array. Each item must include: "
-            "headline, summary, source, url, published_at (ISO if available), why_it_matters, "
-            "thesis_signal (thesis_breaking | thesis_confirming | noise).\n"
-            "Rules: newest credible sources first, include publish dates, "
-            "exclude anything outside the date window, prefer primary-source reporting. "
-            "Max 12 items."
-        )
-        max_tokens = 1800
+    system_prompt = (
+        "You are a market research analyst and financial data assistant. "
+        "Search the web and return two things for the given ticker in a single JSON object:\n"
+        "1. Fundamental news from the last 7 days that could affect a 2-year investment thesis.\n"
+        "2. The earnings timeline (last and next earnings dates and outcome).\n"
+        "Exclude short-term price moves, analyst price targets, and technical commentary.\n"
+        "Respond with JSON only — no prose, no markdown."
+    )
+
+    user_prompt = (
+        f"Ticker: {ticker}\n"
+        f"Today (UTC): {now.date().isoformat()}\n"
+        f"News window: {from_date} to {to_date}\n"
+        f"{thesis_context}\n"
+        "Return exactly this JSON structure:\n"
+        "{\n"
+        '  "news": [\n'
+        "    {\n"
+        '      "headline": "...",\n'
+        '      "summary": "1-2 sentences",\n'
+        '      "source": "publication name",\n'
+        '      "url": "direct article url",\n'
+        '      "published_at": "YYYY-MM-DD or ISO datetime",\n'
+        '      "why_it_matters": "how this affects the long-term thesis",\n'
+        '      "thesis_signal": "thesis_breaking | thesis_confirming | noise"\n'
+        "    }\n"
+        "  ],\n"
+        '  "earnings": {\n'
+        '    "last_earnings_report_date": "YYYY-MM-DD or null",\n'
+        '    "last_earnings_label": "e.g. Q4 FY2025 or null",\n'
+        '    "last_earnings_outcome": "beat | miss | in_line | unknown",\n'
+        '    "next_earnings_date": "YYYY-MM-DD or null",\n'
+        '    "next_earnings_status": "scheduled | estimated | unknown",\n'
+        '    "source_url": "IR page or calendar url or null",\n'
+        '    "notes": "one short sentence"\n'
+        "  }\n"
+        "}\n"
+        "News rules: max 10 items, newest first, only include items published in the date window.\n"
+        "Earnings outcome: 'beat' if EPS/revenue beat consensus, 'miss' if below, 'in_line' if roughly met."
+    )
 
     payload = {
         "tools": [{"type": "web_search_preview"}],
@@ -578,28 +541,57 @@ def fetch_ticker_news_with_gpt(
             {"role": "system", "content": [{"type": "input_text", "text": system_prompt}]},
             {"role": "user", "content": [{"type": "input_text", "text": user_prompt}]},
         ],
-        "max_output_tokens": max_tokens,
+        "max_output_tokens": 2200,
     }
 
     resp = responses_with_fallback(payload, api_key, model)
     text = extract_output_text(resp)
-    try:
-        obj = parse_json_object_from_text(text)
-    except json.JSONDecodeError:
-        return []
-    raw = obj.get("items", [])
-    if not isinstance(raw, list):
-        return []
 
+    try:
+        parsed = parse_json_from_text(text)
+    except json.JSONDecodeError:
+        parsed = {}
+
+    # Handle GPT returning a plain array instead of the expected object
+    if isinstance(parsed, list):
+        raw_news = parsed
+        raw_earnings: Dict[str, Any] = {}
+    elif isinstance(parsed, dict):
+        raw_news = parsed.get("news", [])
+        raw_earnings = parsed.get("earnings", {})
+        if not isinstance(raw_news, list):
+            raw_news = []
+        if not isinstance(raw_earnings, dict):
+            raw_earnings = {}
+    else:
+        raw_news = []
+        raw_earnings = {}
+
+    # Normalize news
     normalized: List[Dict[str, Any]] = []
-    for row in raw:
+    for row in raw_news:
         if isinstance(row, dict):
             item = normalize_news_item(row, ticker)
             if item:
                 normalized.append(item)
 
+    print(f"    {ticker}: GPT returned {len(raw_news)} raw news → {len(normalized)} passed normalization")
     normalized.sort(key=lambda x: x.get("datetime") or "", reverse=True)
-    return normalized[:10]
+    news_items = normalized[:10]
+
+    # Normalize earnings
+    raw_tl = {
+        "last_earnings_report_date": pick_value(raw_earnings, ["last_earnings_report_date", "last_report_date"], None),
+        "last_earnings_label":       pick_value(raw_earnings, ["last_earnings_label", "last_quarter_label"], None),
+        "last_earnings_outcome":     pick_value(raw_earnings, ["last_earnings_outcome", "earnings_outcome", "outcome"], "unknown"),
+        "next_earnings_date":        pick_value(raw_earnings, ["next_earnings_date", "next_report_date"], None),
+        "next_earnings_status":      pick_value(raw_earnings, ["next_earnings_status"], "unknown"),
+        "source_url":                pick_value(raw_earnings, ["source_url", "url"], None),
+        "notes":                     pick_value(raw_earnings, ["notes", "note"], None),
+    }
+    earnings_timeline = normalize_earnings_timeline(raw_tl, now)
+
+    return news_items, earnings_timeline
 
 
 # ── News archiving ─────────────────────────────────────────────────────────────
@@ -664,6 +656,9 @@ def save_weekly_snapshot(holdings: List[Dict[str, Any]], now: datetime, archive_
 # ── Main pipeline ──────────────────────────────────────────────────────────────
 
 def run(mode: str, tickers_file: Path, site_data_dir: Path):
+    if mode != "weekly":
+        raise ValueError("Only 'weekly' mode is supported. Daily mode has been removed.")
+
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("Missing OPENAI_API_KEY environment variable")
@@ -674,8 +669,8 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path):
 
     current_path = site_data_dir / "current_news.json"
     archive_path = site_data_dir / "archive" / "news_archive.json"
-    latest_path = site_data_dir / "latest.json"
-    alerts_path = site_data_dir / "alerts.json"
+    latest_path  = site_data_dir / "latest.json"
+    alerts_path  = site_data_dir / "alerts.json"
 
     current_news = read_json(current_path, [])
     archive_news = read_json(archive_path, [])
@@ -687,13 +682,15 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path):
     for cfg in ticker_configs:
         ticker = cfg["ticker"]
         thesis = cfg.get("thesis")
-        print(f"  Fetching {ticker} ({mode})…")
+        print(f"  Fetching {ticker}…")
 
         ticker_news: List[Dict[str, Any]] = []
         earnings_timeline = normalize_earnings_timeline({}, now)
 
         try:
-            ticker_news = fetch_ticker_news_with_gpt(ticker, mode, now, api_key, model, thesis=thesis)
+            ticker_news, earnings_timeline = fetch_ticker_data_with_gpt(
+                ticker, now, api_key, model, thesis=thesis
+            )
         except RuntimeError as exc:
             msg = str(exc)
             if "CERTIFICATE_VERIFY_FAILED" in msg:
@@ -703,24 +700,10 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path):
                     "  Or set OPENAI_CA_BUNDLE to your org CA PEM.\n"
                     "  Temp bypass: OPENAI_TLS_INSECURE=1"
                 ) from exc
-            print(f"    Warning: news fetch failed for {ticker}; continuing with 0 items. {msg}")
-
-        try:
-            earnings_timeline = fetch_earnings_timeline_with_gpt(ticker, now, api_key, model)
-        except RuntimeError as exc:
-            msg = str(exc)
-            if "CERTIFICATE_VERIFY_FAILED" in msg:
-                raise RuntimeError(
-                    "TLS certificate verification failed.\n"
-                    "  pip install --upgrade certifi\n"
-                    "  Or set OPENAI_CA_BUNDLE to your org CA PEM.\n"
-                    "  Temp bypass: OPENAI_TLS_INSECURE=1"
-                ) from exc
-            print(f"    Warning: earnings fetch failed for {ticker}; using unknown timeline. {msg}")
+            print(f"    Warning: fetch failed for {ticker}; skipping. {msg}")
 
         all_new_items.extend(ticker_news)
 
-        # Collect thesis-level items for alerts.json
         for item in ticker_news:
             if item.get("thesis_signal") in {"thesis_breaking", "thesis_confirming"}:
                 alert_items.append(item)
@@ -745,15 +728,14 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path):
 
     current_news, archive_news = merge_and_archive_news(current_news, archive_news, all_new_items, now)
 
-    # Sort: thesis_breaking tickers first, then by news volume
     holdings = sorted(
         holdings,
         key=lambda x: (-x["thesis_breaking_count"], -x["fundamental_news_count"]),
     )
 
     tickers_with_changes = [h for h in holdings if h["fundamental_news_count"] > 0]
-    durable_item_count = len([n for n in all_new_items if n.get("horizon_fit") == "durable"])
-    breaking_count = len([n for n in all_new_items if n.get("thesis_signal") == "thesis_breaking"])
+    durable_item_count   = len([n for n in all_new_items if n.get("horizon_fit") == "durable"])
+    breaking_count       = len([n for n in all_new_items if n.get("thesis_signal") == "thesis_breaking"])
 
     latest = {
         "generated_at": iso(now),
@@ -778,7 +760,6 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path):
     write_json(archive_path, archive_news)
     write_json(latest_path, latest)
 
-    # Merge new alert items into rolling 30-day alerts.json
     existing_alerts = read_json(alerts_path, [])
     alert_by_id = {a["id"]: a for a in existing_alerts}
     for item in alert_items:
@@ -791,21 +772,19 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path):
     fresh_alerts.sort(key=lambda x: x.get("alerted_at") or "", reverse=True)
     write_json(alerts_path, fresh_alerts)
 
-    # Weekly snapshot
-    if mode == "weekly":
-        save_weekly_snapshot(holdings, now, site_data_dir / "archive")
+    save_weekly_snapshot(holdings, now, site_data_dir / "archive")
 
     breaking_tickers = [h["ticker"] for h in holdings if h["thesis_breaking_count"] > 0]
     print(
-        f"\n✓ Done ({mode}): {len(all_new_items)} items · "
+        f"\n✓ Done: {len(ticker_configs)} tickers · {len(all_new_items)} items · "
         f"{breaking_count} thesis-breaking"
         + (f" [{', '.join(breaking_tickers)}]" if breaking_tickers else "")
     )
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Update stocks dashboard data")
-    parser.add_argument("--mode", choices=["daily", "weekly"], required=True)
+    parser = argparse.ArgumentParser(description="Update stocks dashboard data (weekly)")
+    parser.add_argument("--mode", choices=["weekly"], default="weekly")
     parser.add_argument("--tickers-file", default="config/tickers.json", type=Path)
     parser.add_argument("--site-data-dir", default="site/data", type=Path)
     args = parser.parse_args()
