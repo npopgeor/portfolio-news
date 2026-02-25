@@ -234,12 +234,17 @@ def get_text(url: str, headers: Optional[Dict[str, str]] = None) -> str:
         return resp.read().decode("utf-8", errors="replace")
 
 
-def responses_with_fallback(payload: Dict[str, Any], api_key: str, preferred_model: str) -> Dict[str, Any]:
+def responses_with_fallback(
+    payload: Dict[str, Any],
+    api_key: str,
+    preferred_model: str,
+    allow_model_fallback: bool = True,
+) -> Dict[str, Any]:
     errors: List[str] = []
     retry_attempts = max(1, int(os.getenv("OPENAI_RETRY_ATTEMPTS", "3")))
     retry_base_seconds = max(0.5, float(os.getenv("OPENAI_RETRY_BASE_SECONDS", "1.5")))
     models_to_try = [preferred_model]
-    if preferred_model != FALLBACK_MODEL:
+    if allow_model_fallback and preferred_model != FALLBACK_MODEL:
         models_to_try.append(FALLBACK_MODEL)
     for model in models_to_try:
         for attempt in range(retry_attempts):
@@ -795,6 +800,25 @@ def free_news_is_sparse(news_items: List[Dict[str, Any]]) -> bool:
         return True
     non_noise = [n for n in news_items if (n.get("thesis_signal") or "").strip().lower() not in {"noise", "thesis_noise"}]
     return len(non_noise) == 0
+
+
+def build_no_coverage_gap_item(ticker: str, now: datetime) -> Dict[str, Any]:
+    return {
+        "id": f"{ticker}:no_coverage:{now.date().isoformat()}",
+        "ticker": ticker,
+        "headline": f"No high-confidence fundamental headline found for {ticker} in the last 7 days",
+        "summary": "Free sources were sparse or rate-limited and GPT search did not return a reliable item after filtering.",
+        "source": "System",
+        "url": "",
+        "datetime": iso(now),
+        "theme": "product_strategy",
+        "theme_label": "Product / Strategy",
+        "priority": "medium",
+        "horizon_fit": "possible",
+        "matched_keyword": "gap_fill",
+        "thesis_signal": "noise",
+        "why_it_matters": "Coverage gap marker to avoid empty ticker cards.",
+    }
 
 
 def sec_headers() -> Dict[str, str]:
@@ -1363,7 +1387,8 @@ def fetch_ticker_data_with_gpt(
         "max_output_tokens": 2200,
     }
 
-    resp = responses_with_fallback(payload, api_key, model)
+    # Cost guardrail: one web-search request per ticker (no model fallback retries across models).
+    resp = responses_with_fallback(payload, api_key, model, allow_model_fallback=False)
     text = extract_output_text(resp)
 
     try:
@@ -1386,18 +1411,10 @@ def fetch_ticker_data_with_gpt(
         raw_news = []
         raw_earnings = {}
 
-    # Normalize news
-    normalized: List[Dict[str, Any]] = []
-    for row in raw_news:
-        if isinstance(row, dict):
-            item = normalize_news_item(row, ticker)
-            if item:
-                normalized.append(item)
-
-    print(f"    {ticker}: GPT returned {len(raw_news)} raw news → {len(normalized)} passed normalization")
-    normalized = dedupe_event_news(normalized, ticker)
-    normalized.sort(key=lambda x: x.get("datetime") or "", reverse=True)
-    news_items = normalized[:10]
+    # Normalize news via shared merger to reuse relaxed fallback path when strict mapping is sparse.
+    raw_news_dicts = [r for r in raw_news if isinstance(r, dict)]
+    news_items = merge_news_items_for_ticker(ticker, raw_news_dicts)
+    print(f"    {ticker}: GPT returned {len(raw_news_dicts)} raw news → {len(news_items)} passed normalization")
 
     # Normalize earnings
     raw_tl = {
@@ -1554,6 +1571,8 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path, data_fetch_mode: str
                 note = (earnings_timeline.get("notes") or "").strip()
                 earnings_timeline["notes"] = ("; ".join([note, "; ".join(consensus_bits)]).strip("; ")).strip() or None
                 earnings_timeline = reconcile_earnings_timeline_with_news(earnings_timeline, ticker_news, now)
+                if need_gpt_news and not ticker_news:
+                    ticker_news = [build_no_coverage_gap_item(ticker, now)]
         except Exception as exc:
             msg = str(exc)
             if "CERTIFICATE_VERIFY_FAILED" in msg:
