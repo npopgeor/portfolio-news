@@ -1,0 +1,38 @@
+name: Weekly Stock Update
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'   # Every Monday at 07:00 UTC
+  workflow_dispatch:        # Allows manual trigger from GitHub UI
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install certifi
+
+      - name: Run weekly update
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-4o-search-preview
+        run: python scripts/update_stocks.py --mode weekly
+
+      - name: Commit updated data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add site/data/
+          git diff --staged --quiet || git commit -m "Weekly data update $(date -u +%Y-%m-%d)"
+          git push
