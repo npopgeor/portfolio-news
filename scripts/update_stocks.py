@@ -30,8 +30,8 @@ from urllib.request import Request, urlopen
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
 CURRENT_NEWS_DAYS = 14
 ARCHIVE_RETENTION_DAYS = 365
-PRIMARY_MODEL = "gpt-4o-mini-search-preview"
-FALLBACK_MODEL = "gpt-4o-search-preview"
+PRIMARY_MODEL = "gpt-4.1-mini"
+FALLBACK_MODEL = "gpt-4.1-mini"
 
 THEME_RULES = {
     "guidance": {
