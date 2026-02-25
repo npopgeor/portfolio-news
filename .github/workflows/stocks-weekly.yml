@@ -26,7 +26,7 @@ jobs:
       - name: Run weekly update
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL: gpt-4o-search-preview
+          OPENAI_MODEL: gpt-4o-mini-search-preview
         run: python scripts/update_stocks.py --mode weekly
 
       - name: Commit updated data
