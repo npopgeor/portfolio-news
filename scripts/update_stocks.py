@@ -225,14 +225,18 @@ def parse_json_from_text(text: str) -> Any:
     try:
         return json.loads(candidate)
     except json.JSONDecodeError:
-        start = candidate.find("[")
-        end = candidate.rfind("]")
-        if start != -1 and end != -1 and end > start:
-            return json.loads(candidate[start: end + 1])
-        start = candidate.find("{")
-        end = candidate.rfind("}")
-        if start != -1 and end != -1 and end > start:
-            return json.loads(candidate[start: end + 1])
+        # Model output can include prose plus multiple JSON snippets.
+        # Scan for the first decodable JSON object/array block.
+        decoder = json.JSONDecoder()
+        for i, ch in enumerate(candidate):
+            if ch not in "[{":
+                continue
+            try:
+                value, _end = decoder.raw_decode(candidate, i)
+                if isinstance(value, (dict, list)):
+                    return value
+            except json.JSONDecodeError:
+                continue
         raise
 
 
@@ -562,7 +566,10 @@ def fetch_ticker_news_with_gpt(
 
     resp = responses_with_fallback(payload, api_key, model)
     text = extract_output_text(resp)
-    obj = parse_json_object_from_text(text)
+    try:
+        obj = parse_json_object_from_text(text)
+    except json.JSONDecodeError:
+        return []
     raw = obj.get("items", [])
     if not isinstance(raw, list):
         return []
