@@ -1,0 +1,200 @@
+{
+  "generated_at": "2026-02-25T06:27:06.355812+00:00",
+  "mode": "weekly",
+  "model": "gpt-4o-mini-search-preview",
+  "tickers": [
+    "RKLB",
+    "RDDT",
+    "AXON",
+    "IREN",
+    "LUNR",
+    "PONY",
+    "MU",
+    "CRWD",
+    "PL"
+  ],
+  "summary": {
+    "fundamental_item_count": 0,
+    "durable_item_count": 0,
+    "thesis_breaking_count": 0,
+    "tickers_with_changes": 0,
+    "tickers_without_changes": 9
+  },
+  "holdings": [
+    {
+      "ticker": "RKLB",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": null,
+        "notes": null
+      }
+    },
+    {
+      "ticker": "RDDT",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": null,
+        "notes": null
+      }
+    },
+    {
+      "ticker": "AXON",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": null,
+        "notes": null
+      }
+    },
+    {
+      "ticker": "IREN",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": null,
+        "notes": null
+      }
+    },
+    {
+      "ticker": "LUNR",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": null,
+        "notes": null
+      }
+    },
+    {
+      "ticker": "PONY",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": null,
+        "notes": null
+      }
+    },
+    {
+      "ticker": "MU",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": null,
+        "notes": null
+      }
+    },
+    {
+      "ticker": "CRWD",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": null,
+        "notes": null
+      }
+    },
+    {
+      "ticker": "PL",
+      "thesis": null,
+      "fundamental_news": [],
+      "fundamental_news_count": 0,
+      "durable_news_count": 0,
+      "thesis_breaking_count": 0,
+      "thesis_confirming_count": 0,
+      "themes": {},
+      "earnings_timeline": {
+        "last_earnings_report_date": null,
+        "last_earnings_label": null,
+        "last_earnings_outcome": "unknown",
+        "next_earnings_date": null,
+        "next_earnings_status": "unknown",
+        "source_url": null,
+        "notes": null
+      }
+    }
+  ],
+  "news_counts": {
+    "current": 0,
+    "archive": 0
+  }
+}
