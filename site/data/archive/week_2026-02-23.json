@@ -1,26 +1,6 @@
 {
-  "generated_at": "2026-02-25T19:35:33.087988+00:00",
-  "mode": "weekly",
-  "model": "gpt-4.1-mini",
-  "data_fetch_mode": "hybrid",
-  "tickers": [
-    "RKLB",
-    "RDDT",
-    "AXON",
-    "IREN",
-    "LUNR",
-    "PONY",
-    "MU",
-    "CRWD",
-    "PL"
-  ],
-  "summary": {
-    "fundamental_item_count": 16,
-    "durable_item_count": 0,
-    "thesis_breaking_count": 3,
-    "tickers_with_changes": 7,
-    "tickers_without_changes": 2
-  },
+  "snapshot_date": "2026-02-25T19:35:33.087988+00:00",
+  "week_starting": "2026-02-23",
   "holdings": [
     {
       "ticker": "CRWD",
@@ -472,9 +452,5 @@
         "notes": "source:alpha_vantage; sec_news=0; gdelt_error=Expecting value: line 1 column 1 (char 0); gpt_classifier=skipped; alpha=ok; Piper Sandler reported strong Q4 FY2025 results, exceeding expectations and declaring a special dividend, indicating robust financial health and shareholder value.; source_mode=hybrid; gpt_news=0; free_news=0; gpt_fallback=yes; free_sparse=yes; free_earnings_incomplete=yes"
       }
     }
-  ],
-  "news_counts": {
-    "current": 4,
-    "archive": 11
-  }
+  ]
 }
