@@ -674,16 +674,28 @@
     const MISS=['miss','missed','below expectations','disappoint','cut outlook','guidance cut','fell short','weak results'];
     const BEAT=['beat','beats','above expectations','strong quarter','raises guidance','exceeded','surpassed','topped estimates','record revenue'];
     const INLINE=['in line','met expectations','as expected','inline','in-line'];
+    const hasPhrase=(text, phrase)=>{
+      const esc=phrase.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s+');
+      return new RegExp(`\\b${esc}\\b`, 'i').test(text);
+    };
+    const score=(text, phrases)=>phrases.reduce((acc,p)=>acc+(hasPhrase(text,p)?1:0),0);
     const explicit=(row.earnings_timeline?.last_earnings_outcome||'').toLowerCase();
     if (explicit==='beat')    return {label:'Beat',    cls:'outcome-beat'};
     if (explicit==='miss')    return {label:'Miss',    cls:'outcome-miss'};
     if (explicit==='in_line') return {label:'In Line', cls:'outcome-inline'};
-    const tText=[row.earnings_timeline?.last_earnings_label,row.earnings_timeline?.notes].filter(Boolean).join(' ').toLowerCase();
-    for (const [arr,label,cls] of [[MISS,'Miss','outcome-miss'],[BEAT,'Beat','outcome-beat'],[INLINE,'In Line','outcome-inline']])
-      if (arr.some(w=>tText.includes(w))) return {label,cls};
-    const nText=(row.fundamental_news||[]).map(n=>`${n.headline} ${n.summary}`.toLowerCase()).join(' ');
-    for (const [arr,label,cls] of [[MISS,'Miss','outcome-miss'],[BEAT,'Beat','outcome-beat'],[INLINE,'In Line','outcome-inline']])
-      if (arr.some(w=>nText.includes(w))) return {label,cls};
+    const tText=[row.earnings_timeline?.last_earnings_label,row.earnings_timeline?.notes].filter(Boolean).join(' ');
+    const nText=(row.fundamental_news||[])
+      .filter(n=>/earnings|eps|revenue|guidance|quarter|results/i.test(`${n.headline||''} ${n.summary||''}`))
+      .map(n=>`${n.headline||''} ${n.summary||''}`)
+      .join(' ');
+    const text=`${tText} ${nText}`;
+    const beatScore=score(text, BEAT);
+    const missScore=score(text, MISS);
+    const inlineScore=score(text, INLINE);
+    if (beatScore>0 && missScore>0) return {label:'In Line', cls:'outcome-inline'};
+    if (beatScore>missScore && beatScore>=inlineScore) return {label:'Beat', cls:'outcome-beat'};
+    if (missScore>beatScore && missScore>=inlineScore) return {label:'Miss', cls:'outcome-miss'};
+    if (inlineScore>0) return {label:'In Line', cls:'outcome-inline'};
     return {label:'Unknown', cls:'outcome-unknown'};
   }
 

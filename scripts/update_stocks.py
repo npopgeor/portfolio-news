@@ -103,6 +103,20 @@ THESIS_CONFIRMING_SIGNALS = [
     "breakthrough", "patent granted", "regulatory approval", "landmark deal",
 ]
 
+TRUSTED_EARNINGS_SOURCE_HINTS = [
+    "investor",
+    "ir.",
+    "sec.gov",
+    "nasdaq.com",
+    "nyse.com",
+    "bloomberg.com",
+    "reuters.com",
+    "marketwatch.com",
+    "finance.yahoo.com",
+    "companiesmarketcap.com",
+    "earningswhispers.com",
+]
+
 
 # ── Utilities ──────────────────────────────────────────────────────────────────
 
@@ -458,7 +472,37 @@ def normalize_earnings_timeline(timeline: Dict[str, Any], now: datetime) -> Dict
         warning = "conflict_detected: multiple future earnings dates found in sources"
 
     raw_outcome = (timeline.get("last_earnings_outcome") or "unknown").strip().lower()
-    outcome = raw_outcome if raw_outcome in {"beat", "miss", "in_line", "unknown"} else "unknown"
+    outcome_text = f"{raw_outcome} {notes}".lower()
+    if raw_outcome in {"beat", "miss", "in_line", "unknown"}:
+        outcome = raw_outcome
+    else:
+        beat_hit = any(k in outcome_text for k in ["beat", "beats", "above expectations", "exceeded", "surpassed", "topped estimates"])
+        miss_hit = any(k in outcome_text for k in ["miss", "missed", "below expectations", "fell short", "disappoint"])
+        inline_hit = any(k in outcome_text for k in ["in line", "inline", "in-line", "met expectations", "as expected"])
+        if beat_hit and miss_hit:
+            outcome = "in_line"
+        elif beat_hit:
+            outcome = "beat"
+        elif miss_hit:
+            outcome = "miss"
+        elif inline_hit:
+            outcome = "in_line"
+        else:
+            outcome = "unknown"
+
+    source_url = (timeline.get("source_url") or "").strip()
+    source_lc = source_url.lower()
+    source_is_trusted = bool(source_url) and any(h in source_lc for h in TRUSTED_EARNINGS_SOURCE_HINTS)
+
+    # Anti-hallucination guardrail: do not publish speculative next dates.
+    # If the model cannot provide a trusted source-backed scheduled date, mark unknown.
+    if next_dt and (status != "scheduled" or not source_is_trusted):
+        next_dt = None
+        status = "unknown"
+
+    if status == "estimated":
+        status = "unknown"
+        next_dt = None
 
     return {
         "last_earnings_report_date": last_dt.strftime("%Y-%m-%d") if last_dt else None,
@@ -466,9 +510,90 @@ def normalize_earnings_timeline(timeline: Dict[str, Any], now: datetime) -> Dict
         "last_earnings_outcome": outcome,
         "next_earnings_date": next_dt.strftime("%Y-%m-%d") if next_dt else None,
         "next_earnings_status": status if status in {"scheduled", "estimated", "unknown", "conflict"} else "unknown",
-        "source_url": timeline.get("source_url"),
+        "source_url": source_url or None,
         "notes": warning or notes or None,
     }
+
+
+def infer_earnings_outcome_from_text(text: str) -> str:
+    t = (text or "").lower()
+    beat_terms = [
+        "beat", "beats", "above expectations", "exceeded", "surpassed",
+        "topped estimates", "record revenue", "record earnings", "raises guidance",
+    ]
+    miss_terms = [
+        "miss", "missed", "below expectations", "fell short",
+        "guidance cut", "cut guidance", "disappoint",
+    ]
+    inline_terms = ["in line", "inline", "in-line", "met expectations", "as expected"]
+    # Common strong-positive earnings phrasing even when "beat" is omitted.
+    if re.search(r"\bup\s+\d+(\.\d+)?%\s+year over year\b", t):
+        beat_terms.append("year-over-year-growth-signal")
+
+    beat_hit = any(k in t for k in beat_terms)
+    miss_hit = any(k in t for k in miss_terms)
+    inline_hit = any(k in t for k in inline_terms)
+    if beat_hit and miss_hit:
+        return "in_line"
+    if beat_hit:
+        return "beat"
+    if miss_hit:
+        return "miss"
+    if inline_hit:
+        return "in_line"
+    return "unknown"
+
+
+def reconcile_earnings_timeline_with_news(
+    earnings_timeline: Dict[str, Any], news_items: List[Dict[str, Any]], now: datetime
+) -> Dict[str, Any]:
+    def is_earnings_item(item: Dict[str, Any]) -> bool:
+        if item.get("theme") == "earnings":
+            return True
+        txt = f"{item.get('headline','')} {item.get('summary','')}".lower()
+        return bool(re.search(r"\b(earnings|eps|quarterly results|q[1-4])\b", txt))
+
+    earnings_news = [n for n in news_items if is_earnings_item(n)]
+    if not earnings_news:
+        return earnings_timeline
+
+    earnings_news.sort(key=lambda x: x.get("datetime") or "", reverse=True)
+    recent = earnings_news[0]
+    recent_dt = None
+    if recent.get("datetime"):
+        try:
+            recent_dt = datetime.fromisoformat(str(recent["datetime"]).replace("Z", "+00:00"))
+        except Exception:
+            recent_dt = None
+
+    merged_text = " ".join(
+        f"{n.get('headline','')} {n.get('summary','')} {n.get('why_it_matters','')}" for n in earnings_news[:3]
+    )
+    inferred_outcome = infer_earnings_outcome_from_text(merged_text)
+
+    reconciled = dict(earnings_timeline)
+    current_outcome = (reconciled.get("last_earnings_outcome") or "unknown").strip().lower()
+    if inferred_outcome != "unknown":
+        if current_outcome in {"unknown", "in_line"}:
+            reconciled["last_earnings_outcome"] = inferred_outcome
+        elif current_outcome == "miss" and inferred_outcome == "beat":
+            reconciled["last_earnings_outcome"] = "beat"
+        elif current_outcome == "beat" and inferred_outcome == "miss":
+            reconciled["last_earnings_outcome"] = "in_line"
+
+    # If there's a fresh earnings report headline in the last 10 days, use its date as last report fallback.
+    if recent_dt and recent_dt >= now - timedelta(days=10):
+        last_dt = parse_date_value(reconciled.get("last_earnings_report_date"))
+        if last_dt is None or recent_dt.date() > last_dt.date():
+            reconciled["last_earnings_report_date"] = recent_dt.strftime("%Y-%m-%d")
+            if not reconciled.get("source_url"):
+                reconciled["source_url"] = recent.get("url")
+
+    note = (reconciled.get("notes") or "").strip()
+    if inferred_outcome != "unknown" and "reconciled_from_news" not in note:
+        reconciled["notes"] = ("; ".join([note, "reconciled_from_news"]).strip("; ")).strip() or "reconciled_from_news"
+
+    return normalize_earnings_timeline(reconciled, now)
 
 
 def fetch_ticker_data_with_gpt(
@@ -532,7 +657,9 @@ def fetch_ticker_data_with_gpt(
         "  }\n"
         "}\n"
         "News rules: max 10 items, newest first, only include items published in the date window.\n"
-        "Earnings outcome: 'beat' if EPS/revenue beat consensus, 'miss' if below, 'in_line' if roughly met."
+        "Earnings rules: use the most recent completed earnings release (not an older quarter), and prefer IR/company release pages. "
+        "If an earnings release occurred within the news window, set last_earnings_report_date to that release date and do not leave last_earnings_outcome as unknown. "
+        "Outcome: 'beat' if EPS/revenue beat consensus, 'miss' if below, 'in_line' if roughly met."
     )
 
     payload = {
@@ -590,6 +717,7 @@ def fetch_ticker_data_with_gpt(
         "notes":                     pick_value(raw_earnings, ["notes", "note"], None),
     }
     earnings_timeline = normalize_earnings_timeline(raw_tl, now)
+    earnings_timeline = reconcile_earnings_timeline_with_news(earnings_timeline, news_items, now)
 
     return news_items, earnings_timeline
 
