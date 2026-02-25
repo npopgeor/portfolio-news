@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Fundamental News</title>
+  <style>
+    :root {
+      --ink: #15222d;
+      --panel: #fff9ee;
+      --line: #d5c8af;
+      --high: #8e1e1e;
+      --medium: #8a5a10;
+      --bg: #f5efe3;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: radial-gradient(circle at 10% 0%, #fffaf0, #f3e8d2 60%, #ecdfc4);
+      min-height: 100vh;
+    }
+    .wrap { max-width: 1100px; margin: 24px auto; padding: 16px; }
+    .hero {
+      background: linear-gradient(120deg, #fff8ea, #f6e8c9 50%, #efe0bc);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 12px 24px rgba(36, 31, 18, 0.08);
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; margin-top: 12px; }
+    .controls { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; margin-top: 10px; }
+    input, select, button {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 14px;
+      background: #fffdf8;
+      color: var(--ink);
+    }
+    button { cursor: pointer; background: #174f3c; border-color: #174f3c; color: #fff; font-weight: 600; }
+    button.alt { background: #fffdf8; border-color: var(--line); color: var(--ink); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-top: 14px; }
+    .card {
+      background: linear-gradient(170deg, #fffdf7 0%, #fff7e9 100%);
+      border: 1px solid #d7c6a3;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 10px 24px rgba(35, 30, 18, 0.08);
+    }
+    .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .ticker-pill {
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      font-size: 18px;
+      background: #fff3db;
+      border: 1px solid #dfc8a3;
+      border-radius: 999px;
+      padding: 5px 12px;
+    }
+    .stat-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+    .stat-box {
+      background: #fffdf8;
+      border: 1px solid #dfd1b8;
+      border-radius: 10px;
+      padding: 8px;
+    }
+    .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.75; }
+    .v { font-size: 14px; font-weight: 700; margin-top: 2px; }
+    .section-title { font-weight: 700; font-size: 13px; margin-top: 10px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .small { font-size: 13px; opacity: 0.85; }
+    .mono { font-family: ui-monospace, Menlo, monospace; }
+    .badge { font-size: 12px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); display: inline-block; margin-right: 6px; }
+    .high { color: var(--high); border-color: #d7a0a0; }
+    .medium { color: var(--medium); border-color: #dcc9a8; }
+    .impact-durable { border-color: #4f7a64; color: #1d5138; background: #eff9f2; }
+    .impact-possible { border-color: #8b7a5c; color: #6a593d; background: #fff8ea; }
+    .outcome { font-size: 12px; font-weight: 700; border-radius: 999px; padding: 4px 10px; border: 1px solid transparent; white-space: nowrap; }
+    .outcome-beat { color: #0f5f2e; background: #eaf9ee; border-color: #9ad3ad; }
+    .outcome-inline { color: #7a5b1f; background: #fff6e0; border-color: #e2ca8f; }
+    .outcome-miss { color: #8c1e1e; background: #ffecec; border-color: #e1a4a4; }
+    .outcome-unknown { color: #344350; background: #edf2f7; border-color: #bdc9d4; }
+    .warning { color: #8b1e1e; background: #fff1f1; border: 1px solid #e2b5b5; border-radius: 10px; padding: 8px; }
+    a { color: #134fa1; }
+    ul { margin: 8px 0; padding-left: 18px; }
+    @media (max-width: 780px) { .form-grid, .controls { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Portfolio Fundamental News</h1>
+      <p id="meta" class="small">Loading latest data...</p>
+      <p id="summary" class="small"></p>
+
+      <form id="profile-form" class="form-grid">
+        <input id="username" name="username" placeholder="Username (watch profile)" required />
+        <input id="tickers" name="tickers" placeholder="Tickers, comma-separated (AAPL,MSFT,NVDA)" required />
+        <input id="openai-key" name="openai-key" placeholder="OpenAI API key (for custom GPT fetch)" />
+        <button type="submit">Create Fetch</button>
+      </form>
+
+      <div class="controls">
+        <select id="profile-select"></select>
+        <button class="alt" id="load-profile" type="button">Load Profile</button>
+        <button class="alt" id="delete-profile" type="button">Delete Profile</button>
+      </div>
+      <p class="small">This page is tuned for 2-year thesis changes and filters short-term noise.</p>
+    </section>
+    <section class="grid" id="cards"></section>
+  </div>
+
+  <script>
+    const DATA_URL = './data/latest.json';
+    const PROFILE_KEY = 'stocks_profiles_v1';
+    const CUSTOM_MODEL_CANDIDATES = ['gpt-4o-search-preview', 'gpt-4.1-mini'];
+    let lastCustomModelUsed = null;
+
+    const THEME_RULES = [
+      ['guidance', 'Guidance / Outlook', 'high', ['guidance', 'outlook', 'forecast', 'raises guidance', 'cuts guidance']],
+      ['earnings', 'Earnings Quality', 'high', ['earnings', 'eps', 'revenue', 'beat', 'miss', 'margin', 'quarterly results']],
+      ['legal_regulatory', 'Legal / Regulatory', 'high', ['sec', 'investigation', 'lawsuit', 'regulator', 'fine', 'antitrust', 'settlement']],
+      ['merger_acquisition', 'M&A / Strategic Deal', 'high', ['acquisition', 'acquire', 'merger', 'takeover', 'deal', 'divestiture', 'spin-off']],
+      ['management_governance', 'Management / Governance', 'medium', ['ceo', 'cfo', 'resigns', 'board', 'chairman', 'governance', 'executive']],
+      ['capital_structure', 'Balance Sheet / Financing', 'medium', ['debt', 'refinancing', 'bond', 'offering', 'liquidity', 'cash flow', 'bankruptcy']],
+      ['shareholder_returns', 'Capital Returns', 'medium', ['buyback', 'repurchase', 'dividend', 'special dividend']],
+      ['product_strategy', 'Product / Strategy', 'medium', ['approval', 'launch', 'contract', 'partnership', 'pipeline', 'roadmap']]
+    ];
+    const TEMPORARY_NOISE_KEYWORDS = ['daily', 'intraday', 'today', 'technical', 'chart', 'rally', 'dip', 'overbought', 'oversold', 'short squeeze', 'options activity', 'price target', 'rumor'];
+    const DURABLE_BOOST_KEYWORDS = ['multi-year', 'long-term', 'strategic review', 'restructuring', 'cost transformation', 'capital allocation', 'five-year', 'three-year'];
+
+    function parseTickers(raw) {
+      return raw.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean).filter((t, i, arr) => arr.indexOf(t) === i);
+    }
+
+    function loadProfiles() {
+      try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || '[]'); } catch { return []; }
+    }
+
+    function saveProfiles(profiles) { localStorage.setItem(PROFILE_KEY, JSON.stringify(profiles)); }
+
+    function renderProfileOptions() {
+      const profiles = loadProfiles();
+      const select = document.getElementById('profile-select');
+      select.innerHTML = '';
+      if (!profiles.length) {
+        select.innerHTML = '<option value="">No saved profiles</option>';
+        return;
+      }
+      for (const p of profiles) {
+        const opt = document.createElement('option');
+        opt.value = p.username;
+        opt.textContent = `${p.username} (${p.tickers.join(',')})`;
+        select.appendChild(opt);
+      }
+    }
+
+    function classifyFundamental(headline, summary = '') {
+      const text = `${headline || ''} ${summary || ''}`.toLowerCase();
+      if (TEMPORARY_NOISE_KEYWORDS.some((k) => text.includes(k))) return null;
+      const durable = DURABLE_BOOST_KEYWORDS.some((k) => text.includes(k));
+      for (const [key, label, priority, keywords] of THEME_RULES) {
+        for (const kw of keywords) {
+          if (text.includes(kw)) {
+            return {
+              theme: key,
+              theme_label: label,
+              priority: durable ? 'high' : priority,
+              horizon_fit: durable ? 'durable' : 'possible',
+              matched_keyword: kw
+            };
+          }
+        }
+      }
+      return null;
+    }
+
+    function parseJsonArrayFromText(text) {
+      const clean = (text || '').trim();
+      if (!clean) return [];
+
+      const fenced = clean.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      const candidate = fenced ? fenced[1].trim() : clean;
+
+      try {
+        const parsed = JSON.parse(candidate);
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed && Array.isArray(parsed.items)) return parsed.items;
+      } catch {}
+
+      const start = candidate.indexOf('[');
+      const end = candidate.lastIndexOf(']');
+      if (start >= 0 && end > start) {
+        try { return JSON.parse(candidate.slice(start, end + 1)); } catch {}
+      }
+
+      return [];
+    }
+
+    function parseJsonObjectFromText(text) {
+      const clean = (text || '').trim();
+      if (!clean) return {};
+
+      const fenced = clean.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      const candidate = fenced ? fenced[1].trim() : clean;
+
+      try {
+        const parsed = JSON.parse(candidate);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed) && parsed.length && typeof parsed[0] === 'object') return parsed[0];
+      } catch {}
+
+      const startObj = candidate.indexOf('{');
+      const endObj = candidate.lastIndexOf('}');
+      if (startObj >= 0 && endObj > startObj) {
+        try {
+          const parsed = JSON.parse(candidate.slice(startObj, endObj + 1));
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+        } catch {}
+      }
+
+      const arr = parseJsonArrayFromText(candidate);
+      if (arr.length && typeof arr[0] === 'object' && arr[0] !== null) return arr[0];
+      return {};
+    }
+
+    function pick(obj, keys, fallback = null) {
+      for (const key of keys) {
+        const val = obj?.[key];
+        if (val !== undefined && val !== null && String(val).trim() !== '') return val;
+      }
+      return fallback;
+    }
+
+    function parseDateValue(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return null;
+      const d = new Date(raw);
+      if (Number.isNaN(d.getTime())) return null;
+      return d;
+    }
+
+    function extractDatesFromText(text) {
+      const s = String(text || '');
+      const out = [];
+      const seen = new Set();
+
+      const isoMatches = s.match(/\b20\d{2}-\d{2}-\d{2}\b/g) || [];
+      for (const v of isoMatches) {
+        if (!seen.has(v)) { seen.add(v); out.push(v); }
+      }
+
+      const monthMatches = [...s.matchAll(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2}),\s*(20\d{2})\b/ig)];
+      for (const m of monthMatches) {
+        const d = new Date(`${m[1]} ${m[2]}, ${m[3]} UTC`);
+        if (!Number.isNaN(d.getTime())) {
+          const iso = d.toISOString().slice(0, 10);
+          if (!seen.has(iso)) { seen.add(iso); out.push(iso); }
+        }
+      }
+
+      return out;
+    }
+
+    function normalizeEarningsTimeline(tl) {
+      const now = new Date();
+      const todayIso = now.toISOString().slice(0, 10);
+      let lastRaw = pick(tl, ['last_earnings_report_date', 'last_report_date', 'last_earnings_date'], null);
+      let nextRaw = pick(tl, ['next_earnings_date', 'next_report_date', 'upcoming_earnings_date'], null);
+      let status = String(pick(tl, ['next_earnings_status', 'next_report_status'], 'unknown') || 'unknown').toLowerCase();
+      const notes = String(pick(tl, ['notes', 'note'], '') || '').trim();
+
+      const lastDt = parseDateValue(lastRaw);
+      let nextDt = parseDateValue(nextRaw);
+      if (nextDt && nextDt.toISOString().slice(0, 10) < todayIso) {
+        nextDt = null;
+        status = 'unknown';
+      }
+
+      let warning = null;
+      const futureNoteDates = extractDatesFromText(notes).filter((d) => d >= todayIso);
+      const uniqueFuture = [...new Set(futureNoteDates)];
+
+      if (lastDt && nextDt && nextDt <= lastDt) {
+        nextDt = null;
+        status = 'conflict';
+        warning = 'conflict_detected: next earnings date is not after last report date';
+      } else if (uniqueFuture.length > 1) {
+        nextDt = null;
+        status = 'conflict';
+        warning = 'conflict_detected: multiple future earnings dates found in sources';
+      }
+
+      return {
+        last_earnings_report_date: lastDt ? lastDt.toISOString().slice(0, 10) : null,
+        last_earnings_label: pick(tl, ['last_earnings_label', 'last_quarter_label'], null),
+        next_earnings_date: nextDt ? nextDt.toISOString().slice(0, 10) : null,
+        next_earnings_status: ['scheduled', 'estimated', 'unknown', 'conflict'].includes(status) ? status : 'unknown',
+        source_url: pick(tl, ['source_url', 'earnings_source_url', 'url'], null),
+        notes: warning || notes || null
+      };
+    }
+
+    function deriveEarningsOutcome(row) {
+      const earningsItems = (row.fundamental_news || []).filter((n) => (n.theme || '') === 'earnings');
+      const text = earningsItems.map((n) => `${n.headline || ''} ${n.summary || ''}`.toLowerCase()).join(' ');
+      if (!text) return { label: 'Unknown', cls: 'outcome-unknown' };
+
+      const missWords = ['miss', 'missed', 'below expectations', 'disappoint', 'cut outlook', 'guidance cut'];
+      const beatWords = ['beat', 'beats', 'above expectations', 'strong quarter', 'raises guidance'];
+      const inlineWords = ['in line', 'met expectations', 'as expected'];
+
+      if (missWords.some((w) => text.includes(w))) return { label: 'Miss', cls: 'outcome-miss' };
+      if (beatWords.some((w) => text.includes(w))) return { label: 'Beat', cls: 'outcome-beat' };
+      if (inlineWords.some((w) => text.includes(w))) return { label: 'In Line', cls: 'outcome-inline' };
+      return { label: 'Unknown', cls: 'outcome-unknown' };
+    }
+
+    function extractOutputText(data) {
+      if (typeof data?.output_text === 'string' && data.output_text.trim()) return data.output_text;
+      const out = Array.isArray(data?.output) ? data.output : [];
+      const parts = [];
+      for (const block of out) {
+        const content = Array.isArray(block?.content) ? block.content : [];
+        for (const c of content) {
+          if ((c?.type === 'output_text' || c?.type === 'text') && typeof c?.text === 'string') parts.push(c.text);
+        }
+      }
+      return parts.join('\n').trim();
+    }
+
+    async function callOpenAIWithFallback(payloadBase, apiKey) {
+      const failures = [];
+
+      for (const model of CUSTOM_MODEL_CANDIDATES) {
+        const payload = { ...payloadBase, model };
+        const res = await fetch('https://api.openai.com/v1/responses', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          return { data, model };
+        }
+
+        let details = '';
+        try {
+          const err = await res.json();
+          details = err?.error?.message || JSON.stringify(err);
+        } catch {
+          details = await res.text();
+        }
+
+        failures.push(`${model}: ${res.status}${details ? ` - ${details}` : ''}`);
+        if (res.status !== 404) break;
+      }
+
+      throw new Error(`OpenAI request failed. Tried models -> ${failures.join(' | ')}`);
+    }
+
+    async function fetchTickerNewsWithGpt(ticker, apiKey) {
+      const payload = {
+        tools: [{ type: 'web_search_preview' }],
+        input: [
+          {
+            role: 'system',
+            content: [{ type: 'input_text', text: 'Search the web for company news that could change a 2-year thesis. Exclude short-term technical chatter. Return JSON only.' }]
+          },
+          {
+            role: 'user',
+            content: [{ type: 'input_text', text: `Ticker: ${ticker}. Return a JSON array with fields: headline, summary, source, url, published_at, why_it_matters. Max 10 items.` }]
+          }
+        ],
+        max_output_tokens: 1600
+      };
+
+      const { data, model } = await callOpenAIWithFallback(payload, apiKey);
+      lastCustomModelUsed = model;
+      const text = extractOutputText(data);
+      const rows = parseJsonArrayFromText(text);
+
+      return rows.map((item) => {
+        const headline = item.headline || '';
+        const summary = item.summary || '';
+        const event = classifyFundamental(headline, summary);
+        if (!headline || !event) return null;
+        return {
+          headline,
+          summary,
+          url: item.url || '#',
+          source: item.source || 'Unknown',
+          why_it_matters: item.why_it_matters || '',
+          theme: event.theme,
+          theme_label: event.theme_label,
+          priority: event.priority,
+          horizon_fit: event.horizon_fit,
+          matched_keyword: event.matched_keyword
+        };
+      }).filter(Boolean);
+    }
+
+    async function fetchEarningsTimelineWithGpt(ticker, apiKey) {
+      const payload = {
+        tools: [{ type: 'web_search_preview' }],
+        input: [
+          {
+            role: 'system',
+            content: [{ type: 'input_text', text: 'Search the web and return earnings timeline dates for the ticker. Respond with exactly one JSON object and no markdown.' }]
+          },
+          {
+            role: 'user',
+            content: [{ type: 'input_text', text: `Ticker: ${ticker}. Return exactly this JSON object schema: {"last_earnings_report_date":"YYYY-MM-DD|null","last_earnings_label":"string|null","next_earnings_date":"YYYY-MM-DD|null","next_earnings_status":"scheduled|estimated|unknown","source_url":"string|null","notes":"string|null"}` }]
+          }
+        ],
+        max_output_tokens: 900
+      };
+
+      let data;
+      try {
+        const response = await callOpenAIWithFallback(payload, apiKey);
+        data = response.data;
+        if (!lastCustomModelUsed) lastCustomModelUsed = response.model;
+      } catch (err) {
+        return {
+          last_earnings_report_date: null,
+          last_earnings_label: null,
+          next_earnings_date: null,
+          next_earnings_status: 'unknown',
+          source_url: null,
+          notes: `lookup_failed: ${err?.message || 'unknown error'}`
+        };
+      }
+
+      const obj = parseJsonObjectFromText(extractOutputText(data));
+      return normalizeEarningsTimeline(obj);
+    }
+
+    function renderCards(rows) {
+      const cards = document.getElementById('cards');
+      cards.innerHTML = '';
+
+      for (const row of rows) {
+        const outcome = deriveEarningsOutcome(row);
+        const lastLabel = row.earnings_timeline?.last_earnings_report_date || 'Unknown';
+        const nextLabel = row.earnings_timeline?.next_earnings_date || 'Unknown';
+        const nextStatus = row.earnings_timeline?.next_earnings_status || 'unknown';
+
+        const newsHtml = (row.fundamental_news || []).slice(0, 4).map((n) => {
+          const pr = (n.priority || 'medium').toLowerCase();
+          const impactClass = (n.horizon_fit || 'possible') === 'durable' ? 'impact-durable' : 'impact-possible';
+          return `<li><span class="badge ${pr}">${n.theme_label} (${n.priority})</span><span class="badge ${impactClass}">${n.horizon_fit || 'possible'}</span><a href="${n.url}" target="_blank" rel="noopener">${n.headline}</a></li>`;
+        }).join('');
+
+        const topThemes = Object.entries(row.themes || {}).map(([k, v]) => `${k}: ${v}`).join(' | ');
+
+        const el = document.createElement('article');
+        el.className = 'card';
+        el.innerHTML = `
+          <div class="card-head">
+            <div class="ticker-pill">${row.ticker}</div>
+            <div class="outcome ${outcome.cls}">Last Earnings: ${outcome.label}</div>
+          </div>
+          <div class="section-title">At A Glance</div>
+          <p class="small">Fundamental items: ${row.fundamental_news_count || 0} | Durable: ${row.durable_news_count || 0}</p>
+          <p class="small">${topThemes || 'No mapped themes in this window.'}</p>
+          <div class="section-title">Earnings Timeline</div>
+          <div class="stat-strip">
+            <div class="stat-box">
+              <div class="k">Prev Report</div>
+              <div class="v">${lastLabel}</div>
+            </div>
+            <div class="stat-box">
+              <div class="k">Quarter</div>
+              <div class="v">${row.earnings_timeline?.last_earnings_label || 'Unknown'}</div>
+            </div>
+            <div class="stat-box">
+              <div class="k">Next Report</div>
+              <div class="v">${nextLabel} <span class="small">(${nextStatus})</span></div>
+            </div>
+          </div>
+          ${row.earnings_timeline?.source_url ? `<p class="small"><a href="${row.earnings_timeline.source_url}" target="_blank" rel="noopener">Earnings source</a></p>` : ''}
+          ${row.earnings_timeline?.notes && (row.earnings_timeline.notes.includes('lookup_failed') || row.earnings_timeline.notes.includes('conflict_detected')) ? `<p class="small warning">Warning: ${row.earnings_timeline.notes}</p>` : ''}
+          <div class="section-title">Fundamental Headlines</div>
+          <ul class="small">${newsHtml || '<li>No fundamental-impact headlines found.</li>'}</ul>
+        `;
+        cards.appendChild(el);
+      }
+    }
+
+    async function runDefault() {
+      const res = await fetch(DATA_URL, { cache: 'no-store' });
+      const data = await res.json();
+      const modelLabel = data.model ? `, model: ${data.model}` : '';
+      document.getElementById('meta').textContent = `Updated ${new Date(data.generated_at).toLocaleString()} (${data.mode} run${modelLabel})`;
+      const s = data.summary || {};
+      document.getElementById('summary').textContent = `Fundamental items: ${s.fundamental_item_count || 0} | Durable: ${s.durable_item_count || 0} | Tickers with changes: ${s.tickers_with_changes || 0} | Tickers without changes: ${s.tickers_without_changes || 0} | News active/archive: ${data.news_counts?.current || 0}/${data.news_counts?.archive || 0}`;
+      renderCards(data.holdings || []);
+    }
+
+    async function runProfile(profile) {
+      document.getElementById('meta').textContent = `Fetching ${profile.username} profile...`;
+      document.getElementById('summary').textContent = `Tickers: ${profile.tickers.join(', ')}`;
+      lastCustomModelUsed = null;
+      const apiKey = document.getElementById('openai-key').value.trim();
+      if (!apiKey) throw new Error('Missing OpenAI API key in form');
+
+      const [newsBlocks, earningsBlocks] = await Promise.all([
+        Promise.all(profile.tickers.map((t) => fetchTickerNewsWithGpt(t, apiKey))),
+        Promise.all(profile.tickers.map((t) => fetchEarningsTimelineWithGpt(t, apiKey)))
+      ]);
+
+      const rows = profile.tickers.map((ticker, i) => {
+        const fundamental_news = newsBlocks[i] || [];
+        const themes = {};
+        let durable_news_count = 0;
+        for (const n of fundamental_news) {
+          themes[n.theme_label] = (themes[n.theme_label] || 0) + 1;
+          if (n.horizon_fit === 'durable') durable_news_count += 1;
+        }
+        return {
+          ticker,
+          fundamental_news,
+          fundamental_news_count: fundamental_news.length,
+          durable_news_count,
+          themes,
+          earnings_timeline: earningsBlocks[i] || {
+            last_earnings_report_date: null,
+            last_earnings_label: null,
+            next_earnings_date: null,
+            next_earnings_status: 'unknown',
+            source_url: null,
+            notes: null
+          }
+        };
+      });
+
+      const totalItems = rows.reduce((acc, r) => acc + (r.fundamental_news_count || 0), 0);
+      const durableItems = rows.reduce((acc, r) => acc + (r.durable_news_count || 0), 0);
+      const withChanges = rows.filter((r) => r.fundamental_news_count > 0).length;
+      const modelLabel = lastCustomModelUsed ? `, model: ${lastCustomModelUsed}` : '';
+      document.getElementById('meta').textContent = `Updated ${new Date().toLocaleString()} (custom fetch for ${profile.username}${modelLabel})`;
+      document.getElementById('summary').textContent = `Fundamental items: ${totalItems} | Durable: ${durableItems} | Tickers with changes: ${withChanges} | Total tracked: ${rows.length}`;
+      renderCards(rows);
+    }
+
+    function bindEvents() {
+      document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value.trim();
+        const tickers = parseTickers(document.getElementById('tickers').value);
+        if (!username || !tickers.length) return;
+
+        const profiles = loadProfiles();
+        const existing = profiles.findIndex((p) => p.username === username);
+        const profile = { username, tickers, created_at: new Date().toISOString() };
+        if (existing >= 0) profiles[existing] = profile; else profiles.push(profile);
+
+        saveProfiles(profiles);
+        renderProfileOptions();
+        document.getElementById('profile-select').value = username;
+
+        try { await runProfile(profile); }
+        catch (err) { document.getElementById('meta').textContent = `Custom fetch failed: ${err.message}`; }
+      });
+
+      document.getElementById('load-profile').addEventListener('click', async () => {
+        const username = document.getElementById('profile-select').value;
+        const profile = loadProfiles().find((p) => p.username === username);
+        if (!profile) return;
+        try { await runProfile(profile); }
+        catch (err) { document.getElementById('meta').textContent = `Custom fetch failed: ${err.message}`; }
+      });
+
+      document.getElementById('delete-profile').addEventListener('click', () => {
+        const username = document.getElementById('profile-select').value;
+        if (!username) return;
+        saveProfiles(loadProfiles().filter((p) => p.username !== username));
+        renderProfileOptions();
+      });
+    }
+
+    renderProfileOptions();
+    bindEvents();
+    runDefault().catch((err) => {
+      document.getElementById('meta').textContent = `Failed to load baseline data: ${err.message}`;
+    });
+  </script>
+</body>
+</html>

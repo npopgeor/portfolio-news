@@ -1,0 +1,9 @@
+{
+  "_comment": "Two formats supported. Simple: { tickers: [...] }. Extended: { holdings: [{ticker, thesis}] }",
+  "holdings": [
+    { "ticker": "AAPL", "thesis": null },
+    { "ticker": "MSFT", "thesis": null },
+    { "ticker": "NVDA", "thesis": null },
+    { "ticker": "TSLA", "thesis": null }
+  ]
+}
