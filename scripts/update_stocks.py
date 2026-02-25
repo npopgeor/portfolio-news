@@ -24,12 +24,13 @@ import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
 CURRENT_NEWS_DAYS = 14
 ARCHIVE_RETENTION_DAYS = 365
-DEFAULT_MODEL_CANDIDATES = ["gpt-4o-search-preview", "gpt-4.1-mini"]
+PRIMARY_MODEL = "gpt-4.1-mini"
 
 THEME_RULES = {
     "guidance": {
@@ -187,20 +188,36 @@ def post_json(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]
 
 
 def responses_with_fallback(payload: Dict[str, Any], api_key: str, preferred_model: str) -> Dict[str, Any]:
-    candidates = [preferred_model] + [m for m in DEFAULT_MODEL_CANDIDATES if m != preferred_model]
     errors: List[str] = []
-    for model in candidates:
+    retry_attempts = max(1, int(os.getenv("OPENAI_RETRY_ATTEMPTS", "3")))
+    retry_base_seconds = max(0.5, float(os.getenv("OPENAI_RETRY_BASE_SECONDS", "1.5")))
+    model = preferred_model
+    for attempt in range(retry_attempts):
         try:
             candidate_payload = dict(payload)
             candidate_payload["model"] = model
             resp = post_json(OPENAI_RESPONSES_URL, candidate_payload, api_key)
             resp["_model_used"] = model
             return resp
+        except HTTPError as exc:
+            body = ""
+            try:
+                body = exc.read().decode("utf-8", errors="replace").strip()
+            except Exception:
+                body = ""
+            detail = body or str(exc)
+            errors.append(f"{model}: HTTP {exc.code}: {detail}")
+            if exc.code in {429, 500, 502, 503, 504} and attempt < retry_attempts - 1:
+                time.sleep(retry_base_seconds * (2 ** attempt))
+                continue
+            break
         except Exception as exc:
             text = str(exc)
             errors.append(f"{model}: {text}")
-            if "404" not in text and "model" not in text.lower():
-                break
+            if "timed out" in text.lower() and attempt < retry_attempts - 1:
+                time.sleep(retry_base_seconds * (2 ** attempt))
+                continue
+            break
     raise RuntimeError("OpenAI Responses request failed. Tried: " + " | ".join(errors))
 
 
@@ -651,7 +668,7 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path):
     if not api_key:
         raise RuntimeError("Missing OPENAI_API_KEY environment variable")
 
-    model = os.getenv("OPENAI_MODEL", "gpt-4o-search-preview")
+    model = PRIMARY_MODEL
     ticker_configs = load_tickers(tickers_file)
     now = utc_now()
 
@@ -672,8 +689,23 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path):
         thesis = cfg.get("thesis")
         print(f"  Fetching {ticker} ({mode})…")
 
+        ticker_news: List[Dict[str, Any]] = []
+        earnings_timeline = normalize_earnings_timeline({}, now)
+
         try:
             ticker_news = fetch_ticker_news_with_gpt(ticker, mode, now, api_key, model, thesis=thesis)
+        except RuntimeError as exc:
+            msg = str(exc)
+            if "CERTIFICATE_VERIFY_FAILED" in msg:
+                raise RuntimeError(
+                    "TLS certificate verification failed.\n"
+                    "  pip install --upgrade certifi\n"
+                    "  Or set OPENAI_CA_BUNDLE to your org CA PEM.\n"
+                    "  Temp bypass: OPENAI_TLS_INSECURE=1"
+                ) from exc
+            print(f"    Warning: news fetch failed for {ticker}; continuing with 0 items. {msg}")
+
+        try:
             earnings_timeline = fetch_earnings_timeline_with_gpt(ticker, now, api_key, model)
         except RuntimeError as exc:
             msg = str(exc)
@@ -684,7 +716,7 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path):
                     "  Or set OPENAI_CA_BUNDLE to your org CA PEM.\n"
                     "  Temp bypass: OPENAI_TLS_INSECURE=1"
                 ) from exc
-            raise
+            print(f"    Warning: earnings fetch failed for {ticker}; using unknown timeline. {msg}")
 
         all_new_items.extend(ticker_news)
 

@@ -1,8 +1,6 @@
 name: Daily Alert Check
 
 on:
-  schedule:
-    - cron: '30 8 * * 1-5'  # Mon–Fri at 08:30 UTC
   workflow_dispatch:
 
 jobs:
@@ -26,7 +24,7 @@ jobs:
       - name: Run daily alert check
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL: gpt-4o-mini-search-preview
+          OPENAI_MODEL: gpt-4.1-mini
         run: python scripts/update_stocks.py --mode daily
 
       - name: Commit if changes
