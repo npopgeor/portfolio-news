@@ -36,6 +36,7 @@ SEC_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
 SEC_SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"
 GDELT_DOC_API_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
 ALPHA_VANTAGE_API_URL = "https://www.alphavantage.co/query"
+NEWSAPI_EVERYTHING_URL = "https://newsapi.org/v2/everything"
 CURRENT_NEWS_DAYS = 14
 ARCHIVE_RETENTION_DAYS = 365
 PRIMARY_MODEL = "gpt-4.1-mini"
@@ -131,6 +132,12 @@ LOW_QUALITY_NEWS_DOMAINS = {
     "dailypolitical.com",
     "tickerreport.com",
     "markets.financialcontent.com",
+}
+
+COMPANY_NAME_STOPWORDS = {
+    "inc", "inc.", "corp", "corp.", "corporation", "co", "co.", "company", "companies",
+    "ltd", "ltd.", "limited", "plc", "llc", "group", "holdings", "holding", "pbc",
+    "sa", "ag", "nv", "spa", "s.p.a", "the",
 }
 
 
@@ -410,34 +417,63 @@ def extract_domain(url: str) -> str:
     return host[4:] if host.startswith("www.") else host
 
 
+def _clean_company_title(raw_title: str) -> str:
+    title = str(raw_title or "").lower().strip()
+    if not title:
+        return ""
+    parts = [p for p in re.split(r"[^a-z0-9]+", title) if p]
+    parts = [p for p in parts if p not in COMPANY_NAME_STOPWORDS]
+    return " ".join(parts).strip()
+
+
+def company_profile_for_ticker(ticker: str) -> Dict[str, Any]:
+    try:
+        raw_title = str(get_sec_ticker_map().get(ticker, {}).get("title") or "").strip()
+    except Exception:
+        raw_title = ""
+    cleaned = _clean_company_title(raw_title)
+    tokens = [p for p in cleaned.split() if p]
+    phrases = set()
+    if cleaned:
+        phrases.add(cleaned)
+    if len(tokens) >= 2:
+        phrases.add(" ".join(tokens[:2]))
+    strong_tokens = {t for t in tokens if len(t) >= 4}
+    return {
+        "raw_title": raw_title,
+        "clean_title": cleaned,
+        "phrases": {p for p in phrases if p},
+        "strong_tokens": strong_tokens,
+    }
+
+
 def ticker_aliases(ticker: str) -> set:
     aliases = {ticker.lower()}
-    try:
-        title = str(get_sec_ticker_map().get(ticker, {}).get("title") or "").lower().strip()
-    except Exception:
-        title = ""
-    if title:
-        for suffix in [
-            " inc.", " inc", " corp.", " corp", " corporation", " ltd.", " ltd", " plc",
-            " holdings", " holding", " group", " company", " co.", " co",
-        ]:
-            if title.endswith(suffix):
-                title = title[: -len(suffix)].strip()
-        parts = [p for p in re.split(r"[^a-z0-9]+", title) if p]
-        if parts:
-            aliases.add(" ".join(parts[:2]).strip())
-            aliases.add(parts[0])
-    return {a for a in aliases if a}
+    profile = company_profile_for_ticker(ticker)
+    aliases.update(profile.get("phrases", set()))
+    return {a for a in aliases if a and len(a) >= 2}
 
 
 def is_relevant_to_ticker(ticker: str, headline: str, summary: str) -> bool:
-    text = f"{headline} {summary}".lower()
+    text = f"{headline} {summary}".lower().strip()
     if not text.strip():
         return False
-    aliases = ticker_aliases(ticker)
-    if ticker.lower() in text:
+    ticker_l = ticker.lower()
+    profile = company_profile_for_ticker(ticker)
+    phrases = profile.get("phrases", set())
+    if any(p in text for p in phrases if len(p) >= 5):
         return True
-    return any(a in text for a in aliases if len(a) >= 3)
+    strong_tokens = profile.get("strong_tokens", set())
+    token_hits = 0
+    for tok in strong_tokens:
+        if re.search(rf"(?<![a-z0-9]){re.escape(tok)}(?![a-z0-9])", text):
+            token_hits += 1
+    if len(ticker_l) <= 3:
+        # Short symbols like PL/AI are highly ambiguous; require company-name evidence.
+        return token_hits >= 2
+    if re.search(rf"(?<![a-z0-9]){re.escape(ticker_l)}(?![a-z0-9])", text):
+        return True
+    return token_hits >= 1
 
 
 def source_rank(src: str) -> int:
@@ -907,11 +943,17 @@ def parse_gdelt_seendate(raw: Any) -> Optional[str]:
 
 
 def fetch_gdelt_news_items(ticker: str) -> List[Dict[str, Any]]:
-    aliases = sorted(set(ticker_aliases(ticker)) | {ticker.upper(), ticker.lower()})
-    if aliases:
-        ticker_expr = "(" + " OR ".join([f'"{a}"' for a in aliases]) + ")"
+    profile = company_profile_for_ticker(ticker)
+    phrases = sorted(profile.get("phrases", set()))
+    if len(ticker) <= 3 and phrases:
+        phrase_expr = "(" + " OR ".join([f'"{p}"' for p in phrases]) + ")"
+        ticker_expr = f'("{ticker}" AND {phrase_expr})'
     else:
-        ticker_expr = f'"{ticker}"'
+        aliases = sorted(set(ticker_aliases(ticker)) | {ticker.upper(), ticker.lower()})
+        if aliases:
+            ticker_expr = "(" + " OR ".join([f'"{a}"' for a in aliases]) + ")"
+        else:
+            ticker_expr = f'"{ticker}"'
     query = (
         f"{ticker_expr} AND "
         "(earnings OR guidance OR acquisition OR merger OR lawsuit OR SEC OR investigation "
@@ -971,6 +1013,75 @@ def fetch_gdelt_news_items(ticker: str) -> List[Dict[str, Any]]:
             "url": url_a,
             "published_at": dt_iso,
             "why_it_matters": "Cross-source media signal from GDELT.",
+            "thesis_signal": "noise",
+        })
+    return items
+
+
+def fetch_newsapi_news_items(ticker: str, now: datetime) -> List[Dict[str, Any]]:
+    api_key = os.getenv("NEWSAPI_API_KEY", "").strip()
+    if not api_key:
+        return []
+
+    cutoff_date = (now - timedelta(days=7)).date().isoformat()
+    profile = company_profile_for_ticker(ticker)
+    phrase_terms = sorted(profile.get("phrases", set()))
+    if len(ticker) <= 3 and phrase_terms:
+        phrase_expr = "(" + " OR ".join([f'"{p}"' for p in phrase_terms]) + ")"
+        ticker_expr = f'("{ticker}" AND {phrase_expr})'
+    else:
+        terms = [f'"{ticker}"']
+        for p in phrase_terms:
+            if p and p not in {ticker.lower(), ticker.upper()}:
+                terms.append(f'"{p}"')
+        ticker_expr = "(" + " OR ".join(dict.fromkeys(terms)) + ")"
+    query = (
+        f"{ticker_expr} AND "
+        "(earnings OR guidance OR acquisition OR merger OR lawsuit OR SEC OR investigation "
+        "OR contract OR partnership OR CEO OR revenue OR quarter OR results)"
+    )
+    params = {
+        "q": query,
+        "language": "en",
+        "sortBy": "publishedAt",
+        "pageSize": "50",
+        "from": cutoff_date,
+    }
+    url = f"{NEWSAPI_EVERYTHING_URL}?{urlencode(params, quote_via=quote_plus)}"
+    payload = get_json(url, headers={"X-Api-Key": api_key})
+
+    articles = payload.get("articles", [])
+    if not isinstance(articles, list):
+        return []
+
+    items: List[Dict[str, Any]] = []
+    cutoff_dt = datetime.combine(now.date() - timedelta(days=7), datetime.min.time(), tzinfo=timezone.utc)
+    for a in articles:
+        if not isinstance(a, dict):
+            continue
+        title = str(a.get("title") or "").strip()
+        if not title:
+            continue
+        dt_iso = parse_datetime_to_iso(a.get("publishedAt"))
+        if not dt_iso:
+            continue
+        dt = parse_date_value(dt_iso)
+        if dt and dt < cutoff_dt:
+            continue
+        source_meta = a.get("source")
+        source = ""
+        if isinstance(source_meta, dict):
+            source = str(source_meta.get("name") or "").strip()
+        source = source or "NewsAPI"
+        summary = str(a.get("description") or a.get("content") or "").strip()
+        url_a = str(a.get("url") or "").strip()
+        items.append({
+            "headline": title,
+            "summary": summary,
+            "source": source,
+            "url": url_a,
+            "published_at": dt_iso,
+            "why_it_matters": "Cross-source media signal from NewsAPI.",
             "thesis_signal": "noise",
         })
     return items
@@ -1271,6 +1382,16 @@ def fetch_ticker_data_from_free_sources(
 ) -> tuple:
     all_raw_news: List[Dict[str, Any]] = []
     notes: List[str] = []
+
+    try:
+        newsapi_news = fetch_newsapi_news_items(ticker, now)
+        all_raw_news.extend(newsapi_news)
+        if os.getenv("NEWSAPI_API_KEY", "").strip():
+            notes.append(f"newsapi_news={len(newsapi_news)}")
+        else:
+            notes.append("newsapi=missing_key")
+    except Exception as exc:
+        notes.append(f"newsapi_error={str(exc)[:120]}")
 
     try:
         sec_news = fetch_sec_news_items(ticker, now)
