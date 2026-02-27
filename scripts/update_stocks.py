@@ -136,6 +136,11 @@ LOW_QUALITY_NEWS_DOMAINS = {
     "markets.financialcontent.com",
 }
 
+TICKER_EXTRA_ALIASES: Dict[str, List[str]] = {
+    # Short/ambiguous ticker hardening + recall boost
+    "PL": ["planet labs", "planet labs pbc", "planet labs inc", "planet labs pbc class a"],
+}
+
 COMPANY_NAME_STOPWORDS = {
     "inc", "inc.", "corp", "corp.", "corporation", "co", "co.", "company", "companies",
     "ltd", "ltd.", "limited", "plc", "llc", "group", "holdings", "holding", "pbc",
@@ -455,7 +460,15 @@ def company_profile_for_ticker(ticker: str) -> Dict[str, Any]:
         phrases.add(cleaned)
     if len(tokens) >= 2:
         phrases.add(" ".join(tokens[:2]))
+    for alias in TICKER_EXTRA_ALIASES.get(ticker, []):
+        a = _clean_company_title(alias)
+        if a:
+            phrases.add(a)
     strong_tokens = {t for t in tokens if len(t) >= 4}
+    for p in list(phrases):
+        for tok in p.split():
+            if len(tok) >= 4:
+                strong_tokens.add(tok)
     return {
         "raw_title": raw_title,
         "clean_title": cleaned,
@@ -485,6 +498,11 @@ def is_relevant_to_ticker(ticker: str, headline: str, summary: str) -> bool:
     for tok in strong_tokens:
         if re.search(rf"(?<![a-z0-9]){re.escape(tok)}(?![a-z0-9])", text):
             token_hits += 1
+    if ticker_l == "pl":
+        # Planet Labs: permit "planet" only when paired with company/business anchors.
+        if re.search(r"(?<![a-z0-9])planet(?![a-z0-9])", text):
+            if any(k in text for k in ["labs", "satellite", "imagery", "earth observation", "geospatial", "constellation"]):
+                return True
     if len(ticker_l) <= 3:
         # Short symbols like PL/AI are highly ambiguous; require company-name evidence.
         return token_hits >= 2
@@ -675,13 +693,24 @@ def normalize_earnings_timeline(timeline: Dict[str, Any], now: datetime) -> Dict
     future_note_unique = list(dict.fromkeys(future_note_dates))
 
     if next_dt and last_dt and next_dt <= last_dt:
-        next_dt = None
-        status = "conflict"
-        warning = "conflict_detected: next earnings date is not after last report date"
+        # Resolve conflict by preferring the nearest future candidate date from notes.
+        candidates = []
+        for d in future_note_unique:
+            pd = parse_date_value(d)
+            if pd and (not last_dt or pd.date() > last_dt.date()):
+                candidates.append(pd)
+        if candidates:
+            next_dt = sorted(candidates)[0]
+            status = "unknown" if status not in {"scheduled", "estimated"} else status
+            warning = "conflict_resolved_prefer_future_date"
+        else:
+            next_dt = None
+            status = "unknown"
+            warning = "conflict_resolved_drop_next_date"
     elif len(future_note_unique) > 1:
         next_dt = None
-        status = "conflict"
-        warning = "conflict_detected: multiple future earnings dates found in sources"
+        status = "unknown"
+        warning = "conflict_resolved_multiple_future_dates"
 
     raw_outcome = (timeline.get("last_earnings_outcome") or "unknown").strip().lower()
     outcome_text = f"{raw_outcome} {notes}".lower()
@@ -1094,24 +1123,17 @@ def fetch_brave_news_items(ticker: str, now: datetime) -> List[Dict[str, Any]]:
 
     profile = company_profile_for_ticker(ticker)
     phrase_terms = sorted(profile.get("phrases", set()))
-    if len(ticker) <= 3 and phrase_terms:
-        phrase_expr = "(" + " OR ".join([f'"{p}"' for p in phrase_terms]) + ")"
-        ticker_expr = f'("{ticker}" AND {phrase_expr})'
-    else:
-        terms = [f'"{ticker}"']
-        for p in phrase_terms:
-            if p and p not in {ticker.lower(), ticker.upper()}:
-                terms.append(f'"{p}"')
-        ticker_expr = "(" + " OR ".join(dict.fromkeys(terms)) + ")"
-
-    query = (
-        f"{ticker_expr} AND "
-        "(earnings OR guidance OR acquisition OR merger OR lawsuit OR SEC OR investigation "
-        "OR contract OR partnership OR CEO OR revenue OR quarter OR results)"
-    )
+    base_terms: List[str] = [f'"{ticker}"']
+    for p in phrase_terms[:2]:
+        if p and p not in {ticker.lower(), ticker.upper()}:
+            base_terms.append(f'"{p}"')
+    # Keep Brave query simple (keywords + quoted entities) to avoid validation failures.
+    fundamentals = "earnings guidance acquisition merger lawsuit SEC investigation contract partnership CEO revenue quarter results"
+    query = " ".join(dict.fromkeys(base_terms + [fundamentals]))
     params = {
         "q": query,
-        "count": "50",
+        # Brave API accepts smaller page sizes; keep this conservative for compatibility.
+        "count": "20",
     }
     url = f"{BRAVE_WEB_SEARCH_URL}?{urlencode(params, quote_via=quote_plus)}"
     payload = get_json(url, headers={"X-Subscription-Token": api_key, "Accept": "application/json"})
@@ -1848,7 +1870,17 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path, data_fetch_mode: str
                 # Free-first hybrid: GPT fills only missing/unknown fields.
                 ticker_news = free_news if free_news else gpt_news
                 if free_news and gpt_news:
-                    ticker_news = merge_news_items_for_ticker(ticker, free_news + gpt_news)
+                    # free_news/gpt_news are already normalized records; do not re-run raw normalizer.
+                    by_id: Dict[str, Dict[str, Any]] = {}
+                    for n in free_news + gpt_news:
+                        if not isinstance(n, dict):
+                            continue
+                        nid = str(n.get("id") or "").strip()
+                        if nid:
+                            by_id[nid] = n
+                    merged_items = dedupe_event_news(list(by_id.values()), ticker)
+                    merged_items.sort(key=lambda x: x.get("datetime") or "", reverse=True)
+                    ticker_news = merged_items[:10]
                 earnings_timeline = merge_earnings_with_fallback(free_earnings, gpt_earnings, now)
                 consensus_bits: List[str] = [
                     f"source_mode={fetch_mode}",
