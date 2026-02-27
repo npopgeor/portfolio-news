@@ -271,6 +271,17 @@
     button.alt:hover { border-color: var(--gold); color: var(--gold); }
 
     .hint { font-size: 13px; color: var(--text-dim); margin-top: 10px; line-height: 1.5; }
+    .cost-summary {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(16, 22, 30, 0.72);
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      line-height: 1.45;
+    }
 
     /* ── Cards Grid ── */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
@@ -563,6 +574,7 @@
 
   <!-- Cards -->
   <section class="grid" id="cards"></section>
+  <div id="cost-summary" class="cost-summary">Cost summary will appear here.</div>
 
 </div>
 <script>
@@ -932,6 +944,34 @@
     }
   }
 
+  function formatUsd(v) {
+    const n=Number(v||0);
+    return `$${n.toFixed(6)}`;
+  }
+
+  function renderCostSummary(cost, label='Current week') {
+    const el=document.getElementById('cost-summary');
+    if (!el) return;
+    if (!cost) {
+      el.textContent=`Cost (${label}): unavailable for this snapshot.`;
+      return;
+    }
+    const mode=(cost.mode||'').toLowerCase();
+    if (mode==='free_only') {
+      el.textContent=`Cost (${label}) · mode=free_only · free search = $0.000000`;
+      return;
+    }
+    const braveCalls=Number(cost.brave_search_calls||0);
+    const braveCost=Number(cost.brave_request_cost_usd||0);
+    const gptCalls=Number(cost.gpt_search_calls||0);
+    const gptReq=Number(cost.gpt_search_request_cost_usd||0);
+    const inTok=Number(cost.gpt_input_tokens||0);
+    const outTok=Number(cost.gpt_output_tokens||0);
+    const tokCost=Number(cost.gpt_token_cost_usd||0);
+    const total=Number(cost.total_estimated_cost_usd||0);
+    el.textContent=`Cost (${label}) · mode=${mode||'unknown'} · Brave: ${braveCalls} calls => ${formatUsd(braveCost)} @ $5/1K · GPT search: ${gptCalls} calls => ${formatUsd(gptReq)} @ $25/1K · GPT tokens: in=${inTok}, out=${outTok} => ${formatUsd(tokCost)} · Total=${formatUsd(total)}`;
+  }
+
   // ── Week selector ──
   function getWeekLabel(mondayIso) {
     const d=new Date(mondayIso+'T12:00:00Z');
@@ -972,9 +1012,16 @@
       const r=await fetch(`${ARCHIVE_BASE}${monday}.json`,{cache:'no-store'});
       if (!r.ok) throw new Error('Not found');
       const data=await r.json();
+      const s=data.summary||{};
+      if (s && Object.keys(s).length) {
+        const breakNote=s.thesis_breaking_count?` · ⚡ ${s.thesis_breaking_count} breaking`:'';
+        document.getElementById('summary').textContent=`${s.fundamental_item_count||0} items · ${s.durable_item_count||0} durable${breakNote} · ${s.tickers_with_changes||0}/${(s.tickers_with_changes||0)+(s.tickers_without_changes||0)} tickers changed`;
+      }
       renderCards(data.holdings||[], monday);
+      renderCostSummary(data.cost_summary, getWeekLabel(monday));
     } catch(e) {
       document.getElementById('meta').textContent=`Archive not found for week of ${monday}`;
+      renderCostSummary(null, getWeekLabel(monday));
     }
   }
 
@@ -1236,7 +1283,7 @@
     document.getElementById('meta').textContent=`${getWeekLabel(weekOf)} · Updated ${genDate.toLocaleString()}`;
 
     const s=data.summary||{};
-    const breakNote=s.breaking_item_count?` · ⚡ ${s.breaking_item_count} breaking`:'';
+    const breakNote=s.thesis_breaking_count?` · ⚡ ${s.thesis_breaking_count} breaking`:'';
     document.getElementById('summary').textContent=`${s.fundamental_item_count||0} items · ${s.durable_item_count||0} durable${breakNote} · ${data.news_counts?.current||0} active`;
 
     try {
@@ -1255,6 +1302,7 @@
     const badge=document.getElementById('week-badge');
     badge.className='week-badge current'; badge.textContent='Current';
     renderCards(data.holdings||[], null);
+    renderCostSummary(data.cost_summary, getWeekLabel(weekOf));
     await discoverArchiveWeeks();
   }
 
@@ -1312,6 +1360,7 @@
     document.getElementById('meta').textContent=`Manual fetch (${mode}) · ${new Date().toLocaleString()} · ${profile.username}`;
     document.getElementById('summary').textContent=`${total} items · ${durable} durable${breaking?` · ⚡ ${breaking} breaking`:''} · ${rows.length} tickers`;
     renderCards(rows, null);
+    renderCostSummary(null, `manual ${mode}`);
   }
 
   // ── Events ──

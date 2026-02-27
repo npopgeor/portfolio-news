@@ -1,14 +1,14 @@
 {
-  "_comment": "Two formats supported. Simple: { tickers: [...] }. Extended: { holdings: [{ticker, thesis}] }",
+  "_comment": "Two formats supported. Simple: { tickers: [...] }. Extended: { holdings: [{ticker, company, thesis}] }",
   "holdings": [
-    { "ticker": "RKLB", "thesis": null },
-    { "ticker": "RDDT", "thesis": null },
-    { "ticker": "AXON", "thesis": null },
-    { "ticker": "IREN", "thesis": null },
-    { "ticker": "LUNR", "thesis": null },
-    { "ticker": "PONY", "thesis": null },
-    { "ticker": "MU", "thesis": null },
-    { "ticker": "CRWD", "thesis": null },
-    { "ticker": "PL", "thesis": null }
+    { "ticker": "RKLB", "company": "Rocket Lab USA", "thesis": null },
+    { "ticker": "RDDT", "company": "Reddit", "thesis": null },
+    { "ticker": "AXON", "company": "Axon Enterprise", "thesis": null },
+    { "ticker": "IREN", "company": "IREN Limited", "thesis": null },
+    { "ticker": "LUNR", "company": "Intuitive Machines", "thesis": null },
+    { "ticker": "PONY", "company": "PONY AI", "thesis": null },
+    { "ticker": "MU", "company": "Micron Technology", "thesis": null },
+    { "ticker": "CRWD", "company": "CrowdStrike Holdings", "thesis": null },
+    { "ticker": "PL", "company": "Planet Labs", "thesis": null }
   ]
 }

@@ -36,6 +36,7 @@ SEC_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
 SEC_SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"
 GDELT_DOC_API_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
 ALPHA_VANTAGE_API_URL = "https://www.alphavantage.co/query"
+BRAVE_WEB_SEARCH_URL = "https://api.search.brave.com/res/v1/web/search"
 NEWSAPI_EVERYTHING_URL = "https://newsapi.org/v2/everything"
 CURRENT_NEWS_DAYS = 14
 ARCHIVE_RETENTION_DAYS = 365
@@ -127,6 +128,7 @@ TRUSTED_EARNINGS_SOURCE_HINTS = [
 ]
 
 SEC_COMPANY_TICKERS_CACHE: Optional[Dict[str, Dict[str, Any]]] = None
+TICKER_COMPANY_HINTS: Dict[str, str] = {}
 
 LOW_QUALITY_NEWS_DOMAINS = {
     "dailypolitical.com",
@@ -170,8 +172,8 @@ def load_tickers(path: Path) -> List[Dict[str, Any]]:
     """
     Supports two formats:
       Simple:   { "tickers": ["AAPL", "MSFT"] }
-      Extended: { "holdings": [{"ticker": "AAPL", "thesis": "..."}, ...] }
-    Always returns a list of dicts with at least {"ticker": "AAPL", "thesis": null}.
+      Extended: { "holdings": [{"ticker": "AAPL", "company": "Apple", "thesis": "..."}, ...] }
+    Always returns a list of dicts with at least {"ticker": "AAPL", "company": null, "thesis": null}.
     """
     payload = read_json(path, {})
 
@@ -183,18 +185,30 @@ def load_tickers(path: Path) -> List[Dict[str, Any]]:
         result = []
         for h in holdings:
             if isinstance(h, str):
-                result.append({"ticker": h.strip().upper(), "thesis": None})
+                result.append({"ticker": h.strip().upper(), "company": None, "thesis": None})
             elif isinstance(h, dict):
                 t = str(h.get("ticker", "")).strip().upper()
                 if t:
-                    result.append({"ticker": t, "thesis": h.get("thesis") or None})
+                    company = str(h.get("company", "")).strip() or None
+                    result.append({"ticker": t, "company": company, "thesis": h.get("thesis") or None})
         return result
 
     # Simple format (backwards compatible)
     tickers = payload.get("tickers", [])
     if not isinstance(tickers, list) or not tickers:
         raise ValueError("tickers.json must contain a non-empty 'tickers' list")
-    return [{"ticker": str(t).strip().upper(), "thesis": None} for t in tickers if str(t).strip()]
+    return [{"ticker": str(t).strip().upper(), "company": None, "thesis": None} for t in tickers if str(t).strip()]
+
+
+def set_ticker_company_hints(ticker_configs: List[Dict[str, Any]]) -> None:
+    global TICKER_COMPANY_HINTS
+    hints: Dict[str, str] = {}
+    for cfg in ticker_configs:
+        t = str(cfg.get("ticker", "")).strip().upper()
+        c = str(cfg.get("company", "")).strip()
+        if t and c:
+            hints[t] = c
+    TICKER_COMPANY_HINTS = hints
 
 
 def get_ssl_context() -> ssl.SSLContext:
@@ -427,10 +441,13 @@ def _clean_company_title(raw_title: str) -> str:
 
 
 def company_profile_for_ticker(ticker: str) -> Dict[str, Any]:
-    try:
-        raw_title = str(get_sec_ticker_map().get(ticker, {}).get("title") or "").strip()
-    except Exception:
-        raw_title = ""
+    hint_title = str(TICKER_COMPANY_HINTS.get(ticker, "") or "").strip()
+    raw_title = hint_title
+    if not raw_title:
+        try:
+            raw_title = str(get_sec_ticker_map().get(ticker, {}).get("title") or "").strip()
+        except Exception:
+            raw_title = ""
     cleaned = _clean_company_title(raw_title)
     tokens = [p for p in cleaned.split() if p]
     phrases = set()
@@ -827,6 +844,58 @@ def merge_earnings_with_fallback(primary: Dict[str, Any], fallback: Dict[str, An
     return normalize_earnings_timeline(merged, now)
 
 
+def confirm_earnings_with_alpha(
+    from_news: Dict[str, Any],
+    from_alpha: Dict[str, Any],
+    now: datetime,
+) -> Dict[str, Any]:
+    """
+    Use Alpha Vantage only as a confirmer for earnings fields inferred from news.
+    Alpha should not introduce standalone dates by itself in free/hybrid mode.
+    """
+    merged = dict(from_news or {})
+    alpha = dict(from_alpha or {})
+    notes: List[str] = []
+
+    news_last = parse_date_value(merged.get("last_earnings_report_date"))
+    alpha_last = parse_date_value(alpha.get("last_earnings_report_date"))
+    news_next = parse_date_value(merged.get("next_earnings_date"))
+    alpha_next = parse_date_value(alpha.get("next_earnings_date"))
+
+    last_matched = bool(news_last and alpha_last and news_last.date() == alpha_last.date())
+    next_matched = bool(news_next and alpha_next and news_next.date() == alpha_next.date())
+
+    if last_matched:
+        notes.append("alpha_confirmed_last")
+        if not merged.get("last_earnings_label") and alpha.get("last_earnings_label"):
+            merged["last_earnings_label"] = alpha.get("last_earnings_label")
+        n_out = (merged.get("last_earnings_outcome") or "unknown").strip().lower()
+        a_out = (alpha.get("last_earnings_outcome") or "unknown").strip().lower()
+        if n_out == "unknown" and a_out in {"beat", "miss", "in_line"}:
+            merged["last_earnings_outcome"] = a_out
+    elif news_last and alpha_last:
+        notes.append("alpha_last_mismatch")
+    elif (not news_last) and alpha_last:
+        notes.append("alpha_last_ignored_no_news_match")
+
+    if next_matched:
+        notes.append("alpha_confirmed_next")
+        merged["next_earnings_date"] = news_next.strftime("%Y-%m-%d")
+        merged["next_earnings_status"] = "scheduled"
+    elif news_next and alpha_next:
+        notes.append("alpha_next_mismatch")
+    elif (not news_next) and alpha_next:
+        notes.append("alpha_next_ignored_no_news_match")
+
+    if (last_matched or next_matched) and not merged.get("source_url") and alpha.get("source_url"):
+        merged["source_url"] = alpha.get("source_url")
+
+    note = (merged.get("notes") or "").strip()
+    extra = "; ".join(notes).strip()
+    merged["notes"] = ("; ".join([note, extra]).strip("; ")).strip() or None
+    return normalize_earnings_timeline(merged, now)
+
+
 def free_news_is_sparse(news_items: List[Dict[str, Any]]) -> bool:
     min_items = max(1, int(os.getenv("HYBRID_MIN_FREE_NEWS", "3")))
     if len(news_items) < min_items:
@@ -1013,6 +1082,68 @@ def fetch_gdelt_news_items(ticker: str) -> List[Dict[str, Any]]:
             "url": url_a,
             "published_at": dt_iso,
             "why_it_matters": "Cross-source media signal from GDELT.",
+            "thesis_signal": "noise",
+        })
+    return items
+
+
+def fetch_brave_news_items(ticker: str, now: datetime) -> List[Dict[str, Any]]:
+    api_key = (os.getenv("BRAVE_SEARCH_API_KEY", "").strip() or os.getenv("BRAVE_API_KEY", "").strip())
+    if not api_key:
+        return []
+
+    profile = company_profile_for_ticker(ticker)
+    phrase_terms = sorted(profile.get("phrases", set()))
+    if len(ticker) <= 3 and phrase_terms:
+        phrase_expr = "(" + " OR ".join([f'"{p}"' for p in phrase_terms]) + ")"
+        ticker_expr = f'("{ticker}" AND {phrase_expr})'
+    else:
+        terms = [f'"{ticker}"']
+        for p in phrase_terms:
+            if p and p not in {ticker.lower(), ticker.upper()}:
+                terms.append(f'"{p}"')
+        ticker_expr = "(" + " OR ".join(dict.fromkeys(terms)) + ")"
+
+    query = (
+        f"{ticker_expr} AND "
+        "(earnings OR guidance OR acquisition OR merger OR lawsuit OR SEC OR investigation "
+        "OR contract OR partnership OR CEO OR revenue OR quarter OR results)"
+    )
+    params = {
+        "q": query,
+        "count": "50",
+    }
+    url = f"{BRAVE_WEB_SEARCH_URL}?{urlencode(params, quote_via=quote_plus)}"
+    payload = get_json(url, headers={"X-Subscription-Token": api_key, "Accept": "application/json"})
+
+    web = payload.get("web", {})
+    results = web.get("results", []) if isinstance(web, dict) else []
+    if not isinstance(results, list):
+        return []
+
+    items: List[Dict[str, Any]] = []
+    cutoff_dt = datetime.combine(now.date() - timedelta(days=7), datetime.min.time(), tzinfo=timezone.utc)
+    for r in results:
+        if not isinstance(r, dict):
+            continue
+        title = str(r.get("title") or "").strip()
+        if not title:
+            continue
+        summary = str(r.get("description") or "").strip()
+        url_r = str(r.get("url") or "").strip()
+        raw_dt = r.get("page_age") or r.get("age") or r.get("published") or r.get("date") or r.get("date_last_crawled")
+        dt_iso = parse_datetime_to_iso(raw_dt) or iso(now)
+        dt = parse_date_value(dt_iso)
+        if dt and dt < cutoff_dt:
+            continue
+        source = extract_domain(url_r) or "BraveSearch"
+        items.append({
+            "headline": title,
+            "summary": summary,
+            "source": source,
+            "url": url_r,
+            "published_at": dt_iso,
+            "why_it_matters": "Web result from Brave Search.",
             "thesis_signal": "noise",
         })
     return items
@@ -1384,6 +1515,16 @@ def fetch_ticker_data_from_free_sources(
     notes: List[str] = []
 
     try:
+        brave_news = fetch_brave_news_items(ticker, now)
+        all_raw_news.extend(brave_news)
+        if (os.getenv("BRAVE_SEARCH_API_KEY", "").strip() or os.getenv("BRAVE_API_KEY", "").strip()):
+            notes.append(f"brave_news={len(brave_news)}")
+        else:
+            notes.append("brave=missing_key")
+    except Exception as exc:
+        notes.append(f"brave_error={str(exc)[:120]}")
+
+    try:
         newsapi_news = fetch_newsapi_news_items(ticker, now)
         all_raw_news.extend(newsapi_news)
         if os.getenv("NEWSAPI_API_KEY", "").strip():
@@ -1417,20 +1558,24 @@ def fetch_ticker_data_from_free_sources(
     else:
         notes.append("gpt_classifier=skipped")
 
+    # Earnings primary signal comes from free news sources; Alpha is confirm-only.
+    earnings_from_news = reconcile_earnings_timeline_with_news(normalize_earnings_timeline({}, now), news_items, now)
+    alpha_timeline = normalize_earnings_timeline({}, now)
     try:
-        earnings_timeline = fetch_alpha_earnings_timeline(ticker, now)
+        alpha_timeline = fetch_alpha_earnings_timeline(ticker, now)
         notes.append("alpha=ok" if os.getenv("ALPHA_VANTAGE_API_KEY", "").strip() else "alpha=missing_key")
     except Exception as exc:
-        earnings_timeline = normalize_earnings_timeline({}, now)
         notes.append(f"alpha_error={str(exc)[:120]}")
-
-    earnings_timeline = reconcile_earnings_timeline_with_news(earnings_timeline, news_items, now)
+    earnings_timeline = confirm_earnings_with_alpha(earnings_from_news, alpha_timeline, now)
     note = (earnings_timeline.get("notes") or "").strip()
     extra = "; ".join(notes)
     earnings_timeline["notes"] = ("; ".join([note, extra]).strip("; ")).strip() or None
 
+    source_stats = {
+        "brave_calls": 1 if (os.getenv("BRAVE_SEARCH_API_KEY", "").strip() or os.getenv("BRAVE_API_KEY", "").strip()) else 0,
+    }
     print(f"    {ticker}: free-sources raw={len(all_raw_news)} normalized={len(news_items)}")
-    return news_items, earnings_timeline
+    return news_items, earnings_timeline, source_stats
 
 
 def fetch_ticker_data_with_gpt(
@@ -1510,6 +1655,9 @@ def fetch_ticker_data_with_gpt(
 
     # Cost guardrail: one web-search request per ticker (no model fallback retries across models).
     resp = responses_with_fallback(payload, api_key, model, allow_model_fallback=False)
+    usage = resp.get("usage", {}) if isinstance(resp, dict) else {}
+    input_tokens = int(usage.get("input_tokens") or usage.get("prompt_tokens") or 0)
+    output_tokens = int(usage.get("output_tokens") or usage.get("completion_tokens") or 0)
     text = extract_output_text(resp)
 
     try:
@@ -1550,7 +1698,12 @@ def fetch_ticker_data_with_gpt(
     earnings_timeline = normalize_earnings_timeline(raw_tl, now)
     earnings_timeline = reconcile_earnings_timeline_with_news(earnings_timeline, news_items, now)
 
-    return news_items, earnings_timeline
+    cost_stats = {
+        "gpt_search_calls": 1,
+        "input_tokens": max(0, input_tokens),
+        "output_tokens": max(0, output_tokens),
+    }
+    return news_items, earnings_timeline, cost_stats
 
 
 # ── News archiving ─────────────────────────────────────────────────────────────
@@ -1599,13 +1752,21 @@ def merge_and_archive_news(
     return still_current, pruned_archive
 
 
-def save_weekly_snapshot(holdings: List[Dict[str, Any]], now: datetime, archive_dir: Path) -> None:
+def save_weekly_snapshot(
+    holdings: List[Dict[str, Any]],
+    now: datetime,
+    archive_dir: Path,
+    summary: Dict[str, Any],
+    cost_summary: Dict[str, Any],
+) -> None:
     """Save a complete frozen snapshot of this week's dashboard state."""
     week_start = (now - timedelta(days=now.weekday())).date().isoformat()
     snapshot_path = archive_dir / f"week_{week_start}.json"
     snapshot = {
         "snapshot_date": iso(now),
         "week_starting": week_start,
+        "summary": summary,
+        "cost_summary": cost_summary,
         "holdings": holdings,
     }
     write_json(snapshot_path, snapshot)
@@ -1627,6 +1788,7 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path, data_fetch_mode: str
 
     model = PRIMARY_MODEL
     ticker_configs = load_tickers(tickers_file)
+    set_ticker_company_hints(ticker_configs)
     now = utc_now()
 
     current_path = site_data_dir / "current_news.json"
@@ -1640,11 +1802,16 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path, data_fetch_mode: str
     all_new_items: List[Dict[str, Any]] = []
     holdings = []
     alert_items: List[Dict[str, Any]] = []
+    brave_search_calls = 0
+    gpt_search_calls = 0
+    gpt_input_tokens = 0
+    gpt_output_tokens = 0
 
     for cfg in ticker_configs:
         ticker = cfg["ticker"]
+        company = cfg.get("company")
         thesis = cfg.get("thesis")
-        print(f"  Fetching {ticker}…")
+        print(f"  Fetching {ticker}{f' ({company})' if company else ''}…")
 
         ticker_news: List[Dict[str, Any]] = []
         earnings_timeline = normalize_earnings_timeline({}, now)
@@ -1654,20 +1821,22 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path, data_fetch_mode: str
             gpt_earnings = normalize_earnings_timeline({}, now)
             free_news: List[Dict[str, Any]] = []
             free_earnings = normalize_earnings_timeline({}, now)
+            free_source_stats: Dict[str, int] = {"brave_calls": 0}
+            gpt_cost_stats: Dict[str, int] = {"gpt_search_calls": 0, "input_tokens": 0, "output_tokens": 0}
 
             if fetch_mode in {"hybrid", "free_only"}:
-                free_news, free_earnings = fetch_ticker_data_from_free_sources(
+                free_news, free_earnings, free_source_stats = fetch_ticker_data_from_free_sources(
                     ticker, now, api_key or "", model
                 )
             if fetch_mode == "gpt_only":
-                gpt_news, gpt_earnings = fetch_ticker_data_with_gpt(
+                gpt_news, gpt_earnings, gpt_cost_stats = fetch_ticker_data_with_gpt(
                     ticker, now, api_key or "", model, thesis=thesis
                 )
             elif fetch_mode == "hybrid":
                 need_gpt_news = free_news_is_sparse(free_news)
                 need_gpt_earnings = earnings_timeline_is_incomplete(free_earnings)
                 if need_gpt_news or need_gpt_earnings:
-                    gpt_news, gpt_earnings = fetch_ticker_data_with_gpt(
+                    gpt_news, gpt_earnings, gpt_cost_stats = fetch_ticker_data_with_gpt(
                         ticker, now, api_key or "", model, thesis=thesis
                     )
 
@@ -1694,6 +1863,11 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path, data_fetch_mode: str
                 earnings_timeline = reconcile_earnings_timeline_with_news(earnings_timeline, ticker_news, now)
                 if need_gpt_news and not ticker_news:
                     ticker_news = [build_no_coverage_gap_item(ticker, now)]
+
+            brave_search_calls += int(free_source_stats.get("brave_calls") or 0)
+            gpt_search_calls += int(gpt_cost_stats.get("gpt_search_calls") or 0)
+            gpt_input_tokens += int(gpt_cost_stats.get("input_tokens") or 0)
+            gpt_output_tokens += int(gpt_cost_stats.get("output_tokens") or 0)
         except Exception as exc:
             msg = str(exc)
             if "CERTIFICATE_VERIFY_FAILED" in msg:
@@ -1717,6 +1891,7 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path, data_fetch_mode: str
 
         holdings.append({
             "ticker": ticker,
+            "company": company,
             "thesis": thesis,
             "fundamental_news": ticker_news,
             "fundamental_news_count": len(ticker_news),
@@ -1739,6 +1914,44 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path, data_fetch_mode: str
     tickers_with_changes = [h for h in holdings if h["fundamental_news_count"] > 0]
     durable_item_count   = len([n for n in all_new_items if n.get("horizon_fit") == "durable"])
     breaking_count       = len([n for n in all_new_items if n.get("thesis_signal") == "thesis_breaking"])
+    summary = {
+        "fundamental_item_count": len(all_new_items),
+        "durable_item_count": durable_item_count,
+        "thesis_breaking_count": breaking_count,
+        "tickers_with_changes": len(tickers_with_changes),
+        "tickers_without_changes": len(holdings) - len(tickers_with_changes),
+    }
+
+    brave_request_cost_usd = 0.0
+    gpt_search_request_cost_usd = 0.0
+    gpt_token_cost_usd = 0.0
+    if fetch_mode == "hybrid":
+        brave_request_cost_usd = (brave_search_calls / 1000.0) * 5.0
+    if fetch_mode in {"hybrid", "gpt_only"}:
+        gpt_search_request_cost_usd = (gpt_search_calls / 1000.0) * 25.0
+        input_rate_per_1m = float(os.getenv("OPENAI_INPUT_USD_PER_1M", "0"))
+        output_rate_per_1m = float(os.getenv("OPENAI_OUTPUT_USD_PER_1M", "0"))
+        gpt_token_cost_usd = ((gpt_input_tokens / 1_000_000.0) * input_rate_per_1m) + (
+            (gpt_output_tokens / 1_000_000.0) * output_rate_per_1m
+        )
+    total_estimated_cost_usd = brave_request_cost_usd + gpt_search_request_cost_usd + gpt_token_cost_usd
+    cost_summary = {
+        "mode": fetch_mode,
+        "free_search_usd": 0.0 if fetch_mode == "free_only" else None,
+        "brave_search_calls": brave_search_calls,
+        "brave_request_cost_usd": round(brave_request_cost_usd, 6),
+        "gpt_search_calls": gpt_search_calls,
+        "gpt_search_request_cost_usd": round(gpt_search_request_cost_usd, 6),
+        "gpt_input_tokens": gpt_input_tokens,
+        "gpt_output_tokens": gpt_output_tokens,
+        "gpt_token_cost_usd": round(gpt_token_cost_usd, 6),
+        "gpt_input_rate_usd_per_1m": float(os.getenv("OPENAI_INPUT_USD_PER_1M", "0")),
+        "gpt_output_rate_usd_per_1m": float(os.getenv("OPENAI_OUTPUT_USD_PER_1M", "0")),
+        "total_estimated_cost_usd": round(total_estimated_cost_usd if fetch_mode != "free_only" else 0.0, 6),
+        "notes": (
+            "free_only mode shows $0 by request; hybrid includes Brave request fees + GPT search request fees + configured GPT token rates."
+        ),
+    }
 
     latest = {
         "generated_at": iso(now),
@@ -1746,13 +1959,8 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path, data_fetch_mode: str
         "model": model,
         "data_fetch_mode": fetch_mode,
         "tickers": [c["ticker"] for c in ticker_configs],
-        "summary": {
-            "fundamental_item_count": len(all_new_items),
-            "durable_item_count": durable_item_count,
-            "thesis_breaking_count": breaking_count,
-            "tickers_with_changes": len(tickers_with_changes),
-            "tickers_without_changes": len(holdings) - len(tickers_with_changes),
-        },
+        "summary": summary,
+        "cost_summary": cost_summary,
         "holdings": holdings,
         "news_counts": {
             "current": len(current_news),
@@ -1776,7 +1984,7 @@ def run(mode: str, tickers_file: Path, site_data_dir: Path, data_fetch_mode: str
     fresh_alerts.sort(key=lambda x: x.get("alerted_at") or "", reverse=True)
     write_json(alerts_path, fresh_alerts)
 
-    save_weekly_snapshot(holdings, now, site_data_dir / "archive")
+    save_weekly_snapshot(holdings, now, site_data_dir / "archive", summary, cost_summary)
 
     breaking_tickers = [h["ticker"] for h in holdings if h["thesis_breaking_count"] > 0]
     print(
