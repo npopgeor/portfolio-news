@@ -874,10 +874,10 @@
 
       // Signal strip
       const chips=[];
-      if (breakingCount) chips.push(`<span class="signal-chip breaking"><span class="dot"></span>${breakingCount} thesis-breaking</span>`);
-      if (confirmCount)  chips.push(`<span class="signal-chip confirming"><span class="dot"></span>${confirmCount} confirming</span>`);
-      if (watchCount)    chips.push(`<span class="signal-chip watch"><span class="dot"></span>${watchCount} monitor</span>`);
-      if (noiseCount)    chips.push(`<span class="signal-chip noise"><span class="dot"></span>${noiseCount} background</span>`);
+      if (breakingCount) chips.push(`<span class="signal-chip breaking" title="Count of items marked thesis-breaking (potentially thesis-negative, high urgency)."><span class="dot"></span>${breakingCount} thesis-breaking</span>`);
+      if (confirmCount)  chips.push(`<span class="signal-chip confirming" title="Count of items marked thesis-confirming (supports long-term thesis)."><span class="dot"></span>${confirmCount} confirming</span>`);
+      if (watchCount)    chips.push(`<span class="signal-chip watch" title="Count of monitor/watch items (worth tracking, lower conviction)."><span class="dot"></span>${watchCount} monitor</span>`);
+      if (noiseCount)    chips.push(`<span class="signal-chip noise" title="Count of background/noise items (relevant but weak thesis impact)."><span class="dot"></span>${noiseCount} background</span>`);
       const signalHtml = chips.length ? `<div class="signal-strip">${chips.join('')}</div>` : '';
 
       // News items with date
@@ -889,9 +889,9 @@
         const dateStr=fmtDate(n.datetime);
         return `<li class="news-item${isBrk?' is-breaking':''}">
           <div class="news-badges">
-            <span class="badge ${pr}">${n.theme_label}</span>
-            <span class="badge ${hz.cls}">${hz.label}</span>
-            <span class="badge ${si.cls}">${si.label}</span>
+            <span class="badge ${pr}" title="Theme category for this headline.">${n.theme_label}</span>
+            <span class="badge ${hz.cls}" title="Estimated horizon fit: durable = likely long-term impact; possible/uncertain = weaker signal.">${hz.label}</span>
+            <span class="badge ${si.cls}" title="Thesis signal: breaking = negative thesis risk, confirming = thesis support, monitor/noise = lower conviction.">${si.label}</span>
           </div>
           <div class="news-headline"><a href="${n.url||'#'}" target="_blank" rel="noopener">${n.headline}</a></div>
           ${dateStr?`<div class="news-date">${dateStr}</div>`:''}
@@ -900,17 +900,17 @@
 
       const themeEntries=Object.entries(row.themes||{});
       const themesHtml=themeEntries.length
-        ?`<div class="themes-row">${themeEntries.map(([k,v])=>`<span class="theme-chip">${k} <strong style="opacity:.7">${v}</strong></span>`).join('')}</div>`:'';
+        ?`<div class="themes-row">${themeEntries.map(([k,v])=>`<span class="theme-chip" title="Count of accepted headlines in this theme for this ticker.">${k} <strong style="opacity:.7">${v}</strong></span>`).join('')}</div>`:'';
 
       const el=document.createElement('article');
       el.className=`card${isBreaking?' is-breaking':''}`;
       el.innerHTML=`
         <div class="card-head">
           <div class="ticker-block">
-            <div class="ticker-pill">${row.ticker}</div>
-            <div class="ticker-sub">${row.thesis||'Long-term holding'}</div>
+            <div class="ticker-pill" title="Ticker symbol for this card.">${row.ticker}</div>
+            <div class="ticker-sub" title="Your stored thesis note for this ticker (or default label).">${row.thesis||'Long-term holding'}</div>
           </div>
-          <div class="outcome ${outcome.cls}">
+          <div class="outcome ${outcome.cls}" title="Most recent inferred earnings outcome for this ticker.">
             <span class="outcome-label">Last Earnings</span>
             <span>${outcome.label}</span>
           </div>
@@ -919,25 +919,25 @@
         ${signalHtml}
 
         <div class="glance-row">
-          <span class="glance-chip">Items this week: <strong>${news.length}</strong></span>
-          <span class="glance-chip">Durable: <strong>${news.filter(n=>n.horizon_fit==='durable').length}</strong></span>
+          <span class="glance-chip" title="Number of fundamental headlines currently shown in this card view window.">Items this week: <strong>${news.length}</strong></span>
+          <span class="glance-chip" title="How many shown items look durable (likely long-term impact).">Durable: <strong>${news.filter(n=>n.horizon_fit==='durable').length}</strong></span>
         </div>
 
         ${themesHtml}
 
         <div class="divider"></div>
-        <div class="sec-label">Earnings Timeline</div>
+        <div class="sec-label" title="Timeline fields inferred from sources and conflict checks.">Earnings Timeline</div>
         <div class="stat-strip">
-          <div class="stat-box"><div class="stat-k">Prev Report</div><div class="stat-v">${lastLabel}</div></div>
-          <div class="stat-box"><div class="stat-k">Quarter</div><div class="stat-v">${quarterLabel}</div></div>
-          <div class="stat-box"><div class="stat-k">Next Report</div><div class="stat-v">${nextLabel}<span class="status-chip">${nextStatus}</span></div></div>
+          <div class="stat-box" title="Date of the latest known completed earnings report."><div class="stat-k">Prev Report</div><div class="stat-v">${lastLabel}</div></div>
+          <div class="stat-box" title="Label derived for the latest report period (e.g., Q4 FY2025)."><div class="stat-k">Quarter</div><div class="stat-v">${quarterLabel}</div></div>
+          <div class="stat-box" title="Next expected earnings date and confidence status."><div class="stat-k">Next Report</div><div class="stat-v">${nextLabel}<span class="status-chip">${nextStatus}</span></div></div>
         </div>
 
-        ${row.earnings_timeline?.source_url?`<a class="source-link" href="${row.earnings_timeline.source_url}" target="_blank" rel="noopener">↗ Earnings source</a>`:''}
+        ${row.earnings_timeline?.source_url?`<a class="source-link" href="${row.earnings_timeline.source_url}" target="_blank" rel="noopener" title="Open the source used for earnings timeline fields.">↗ Earnings source</a>`:''}
         ${row.earnings_timeline?.notes&&(row.earnings_timeline.notes.includes('lookup_failed')||row.earnings_timeline.notes.includes('conflict_detected'))?`<div class="warn-box">⚠ ${row.earnings_timeline.notes}</div>`:''}
 
         <div class="divider"></div>
-        <div class="sec-label">Fundamental Headlines</div>
+        <div class="sec-label" title="Accepted headlines that passed relevance/theme/noise filters.">Fundamental Headlines</div>
         ${newsHtml?`<ul class="news-list">${newsHtml}</ul>`:'<p class="no-news">No fundamental-impact headlines this week.</p>'}
       `;
       cards.appendChild(el);
