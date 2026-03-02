@@ -1,19 +1,6 @@
 {
-  "generated_at": "2026-03-02T07:48:37.841723+00:00",
-  "mode": "weekly",
-  "model": "gpt-4.1-mini",
-  "data_fetch_mode": "hybrid",
-  "tickers": [
-    "RKLB",
-    "RDDT",
-    "AXON",
-    "IREN",
-    "LUNR",
-    "PONY",
-    "MU",
-    "CRWD",
-    "PL"
-  ],
+  "snapshot_date": "2026-03-02T07:48:37.841723+00:00",
+  "week_starting": "2026-03-02",
   "summary": {
     "fundamental_item_count": 22,
     "durable_item_count": 0,
@@ -601,9 +588,5 @@
         "notes": "brave=missing_key; newsapi=missing_key; sec_news=0; gdelt_error=Expecting value: line 1 column 1 (char 0); gpt_classifier=skipped; alpha=ok; The upcoming earnings report is scheduled for March 20, 2026.; source_mode=hybrid; gpt_news=1; free_news=0; gpt_fallback=yes; free_sparse=yes; free_earnings_incomplete=yes"
       }
     }
-  ],
-  "news_counts": {
-    "current": 21,
-    "archive": 14
-  }
+  ]
 }
