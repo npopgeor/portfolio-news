@@ -1,5 +1,69 @@
 [
   {
+    "id": "MU:no_coverage:2026-03-16",
+    "ticker": "MU",
+    "headline": "No high-confidence fundamental headline found for MU in the last 7 days",
+    "summary": "Free sources were sparse or rate-limited and GPT search did not return a reliable item after filtering.",
+    "source": "System",
+    "url": "",
+    "datetime": "2026-03-16T08:07:05.506236+00:00",
+    "theme": "product_strategy",
+    "theme_label": "Product / Strategy",
+    "priority": "medium",
+    "horizon_fit": "possible",
+    "matched_keyword": "gap_fill",
+    "thesis_signal": "noise",
+    "why_it_matters": "Coverage gap marker to avoid empty ticker cards."
+  },
+  {
+    "id": "RKLB:https://www.sec.gov/Archives/edgar/data/1819994/000181999426000016/rklb-20260312.htm",
+    "ticker": "RKLB",
+    "headline": "RKLB SEC filing 8-K",
+    "summary": "Material corporate update filed with SEC; may include earnings, strategy, governance, or legal changes.",
+    "source": "SEC",
+    "url": "https://www.sec.gov/Archives/edgar/data/1819994/000181999426000016/rklb-20260312.htm",
+    "datetime": "2026-03-12T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "earnings",
+    "thesis_signal": "noise",
+    "why_it_matters": "Primary-source regulatory filing."
+  },
+  {
+    "id": "RDDT:https://www.investing.com/news/insider-trading-news/reddit-cto-slowe-sells-129m-in-rddt-stock-93CH-4556054",
+    "ticker": "RDDT",
+    "headline": "Reddit CTO Slowe Sells $1.29M in RDDT Stock",
+    "summary": "Christopher Brian Slowe, Reddit's CTO, sold 7,500 shares of Class A Common Stock for approximately $1.29 million, with prices ranging from $133.45 to $138.86 per share.",
+    "source": "Investing.com",
+    "url": "https://www.investing.com/news/insider-trading-news/reddit-cto-slowe-sells-129m-in-rddt-stock-93CH-4556054",
+    "datetime": "2026-03-12T00:00:00+00:00",
+    "theme": "product_strategy",
+    "theme_label": "Product / Strategy",
+    "priority": "medium",
+    "horizon_fit": "possible",
+    "matched_keyword": "fallback",
+    "thesis_signal": "noise",
+    "why_it_matters": "Insider transactions can signal confidence or concern; however, without additional context, it's challenging to interpret the impact on Reddit's long-term investment thesis."
+  },
+  {
+    "id": "AXON:https://www.sec.gov/Archives/edgar/data/1069183/000162828026016872/axon-20260305.htm",
+    "ticker": "AXON",
+    "headline": "AXON SEC filing 8-K",
+    "summary": "Material corporate update filed with SEC; may include earnings, strategy, governance, or legal changes.",
+    "source": "SEC",
+    "url": "https://www.sec.gov/Archives/edgar/data/1069183/000162828026016872/axon-20260305.htm",
+    "datetime": "2026-03-11T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "earnings",
+    "thesis_signal": "noise",
+    "why_it_matters": "Primary-source regulatory filing."
+  },
+  {
     "id": "PL:no_coverage:2026-03-09",
     "ticker": "PL",
     "headline": "No high-confidence fundamental headline found for PL in the last 7 days",
@@ -366,6 +430,22 @@
     "matched_keyword": "sec",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "Significant contract win enhances Rocket Lab's position in the space systems market, bolstering long-term growth prospects."
+  },
+  {
+    "id": "RKLB:https://www.investing.com/equities/vector-acquisition-earnings",
+    "ticker": "RKLB",
+    "headline": "Rocket Lab Reports Q4 2025 Earnings",
+    "summary": "On February 26, 2026, Rocket Lab announced its Q4 2025 earnings, reporting a GAAP EPS loss of $0.09 per share, meeting analysts' expectations of a $0.09 loss. Revenue for the quarter was $179.65 million, exceeding the estimate of $178.07 million. The company also provided guidance for FY2026 revenue at $885.46 million, reflecting continued growth and investment in Neutron development and infrastructure expansion.",
+    "source": "Investing.com",
+    "url": "https://www.investing.com/equities/vector-acquisition-earnings",
+    "datetime": "2026-02-26T00:00:00+00:00",
+    "theme": "guidance",
+    "theme_label": "Guidance / Outlook",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "guidance",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The earnings report demonstrates Rocket Lab's strong revenue growth and strategic investments, aligning with the long-term investment thesis focused on the company's expansion and technological advancements."
   },
   {
     "id": "AXON:no_coverage:2026-02-25",
@@ -928,6 +1008,22 @@
     "why_it_matters": "This substantial contract with Microsoft underscores IREN's strong position in the AI cloud services market, enhancing its competitive moat and providing a significant growth driver over the next two years."
   },
   {
+    "id": "IREN:https://iren.gcs-web.com/news-releases/news-release-details/iren-secures-97bn-ai-cloud-contract-microsoft",
+    "ticker": "IREN",
+    "headline": "IREN Secures $9.7bn AI Cloud Contract with Microsoft",
+    "summary": "IREN has signed a multi-year GPU cloud services contract with Microsoft, valued at approximately $9.7 billion over five years, including a 20% prepayment. The GPUs are expected to be deployed in phases through 2026 at IREN\u2019s 750MW Childress, Texas campus, supporting 200MW of critical IT load.",
+    "source": "IREN",
+    "url": "https://iren.gcs-web.com/news-releases/news-release-details/iren-secures-97bn-ai-cloud-contract-microsoft",
+    "datetime": "2025-11-03T00:00:00+00:00",
+    "theme": "legal_regulatory",
+    "theme_label": "Legal / Regulatory",
+    "priority": "high",
+    "horizon_fit": "durable",
+    "matched_keyword": "sec",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "This substantial contract with Microsoft enhances IREN's position in the AI cloud services market, providing a significant revenue stream and demonstrating the scalability of its data centers, which is crucial for long-term growth."
+  },
+  {
     "id": "RDDT:https://www.nasdaq.com/articles/reddit-inc-rddt-surpasses-q3-earnings-and-revenue-estimates",
     "ticker": "RDDT",
     "headline": "Reddit Inc. (RDDT) Surpasses Q3 Earnings and Revenue Estimates",
@@ -1027,7 +1123,7 @@
     "id": "MU:https://investors.micron.com/news-releases/news-release-details/micron-technology-report-fiscal-fourth-quarter-results-and-full",
     "ticker": "MU",
     "headline": "Micron Technology to Report Fiscal Fourth Quarter Results and Full Fiscal Year 2025 on September 23, 2025",
-    "summary": "Micron announced its upcoming earnings conference call scheduled for September 23, 2025, to discuss fiscal Q4 and full fiscal year 2025 results.",
+    "summary": "Micron Technology announced it will hold its fiscal fourth quarter and full fiscal year earnings conference call on September 23, 2025, providing insights into the company's financial performance and strategic direction.",
     "source": "Micron Technology",
     "url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-report-fiscal-fourth-quarter-results-and-full",
     "datetime": "2025-08-28T00:00:00+00:00",
@@ -1037,7 +1133,7 @@
     "horizon_fit": "possible",
     "matched_keyword": "earnings",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "The scheduled earnings report will provide insights into Micron's financial performance and strategic direction, which are crucial for assessing its long-term investment potential."
+    "why_it_matters": "The upcoming earnings report will offer valuable information on Micron's financial health and strategic initiatives, aiding investors in assessing the company's long-term growth prospects."
   },
   {
     "id": "RDDT:https://www.nasdaq.com/articles/reddit-inc-rddt-surpasses-q2-earnings-and-revenue-estimates",
@@ -1134,21 +1230,5 @@
     "matched_keyword": "earnings",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "Early-year strong performance suggests Reddit's platform is effectively monetizing user engagement, supporting its long-term investment thesis."
-  },
-  {
-    "id": "RKLB:https://marketchameleon.com/PressReleases/i/2071004/RKLB/rocket-labs-neutron-rocket-onramped-to-us",
-    "ticker": "RKLB",
-    "headline": "Rocket Lab's Neutron Rocket On-Ramped to U.S. Space Force's $5.6b National Security Space Launch Program",
-    "summary": "Rocket Lab's Neutron rocket was selected by the U.S. Space Force to compete for the Department of Defense's National Security Space Launch Phase 3 Lane 1 program, with a maximum value of $5.6 billion over five years.",
-    "source": "MarketChameleon",
-    "url": "https://marketchameleon.com/PressReleases/i/2071004/RKLB/rocket-labs-neutron-rocket-onramped-to-us",
-    "datetime": "2025-03-27T00:00:00+00:00",
-    "theme": "legal_regulatory",
-    "theme_label": "Legal / Regulatory",
-    "priority": "high",
-    "horizon_fit": "possible",
-    "matched_keyword": "sec",
-    "thesis_signal": "thesis_confirming",
-    "why_it_matters": "Inclusion in this prestigious program validates Rocket Lab's technological advancements and positions the company as a key player in national security space missions, supporting the long-term investment thesis centered on the company's growth and strategic partnerships."
   }
 ]
