@@ -1,19 +1,6 @@
 {
-  "generated_at": "2026-04-20T09:06:12.374307+00:00",
-  "mode": "weekly",
-  "model": "gpt-4.1-mini",
-  "data_fetch_mode": "hybrid",
-  "tickers": [
-    "RKLB",
-    "RDDT",
-    "AXON",
-    "IREN",
-    "LUNR",
-    "PONY",
-    "MU",
-    "CRWD",
-    "PL"
-  ],
+  "snapshot_date": "2026-04-20T09:06:12.374307+00:00",
+  "week_starting": "2026-04-20",
   "summary": {
     "fundamental_item_count": 20,
     "durable_item_count": 0,
@@ -568,9 +555,5 @@
         "notes": "brave=missing_key; newsapi=missing_key; sec_news=0; gdelt_error=HTTP Error 429: Too Many Requests; gpt_classifier=skipped; alpha=ok; Q1 FY2026 earnings report released on April 16, 2026.; source_mode=hybrid; gpt_news=0; free_news=0; gpt_fallback=yes; free_sparse=yes; free_earnings_incomplete=yes"
       }
     }
-  ],
-  "news_counts": {
-    "current": 14,
-    "archive": 132
-  }
+  ]
 }
