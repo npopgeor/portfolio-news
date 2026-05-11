@@ -1,19 +1,6 @@
 {
-  "generated_at": "2026-05-11T10:37:19.047979+00:00",
-  "mode": "weekly",
-  "model": "gpt-4.1-mini",
-  "data_fetch_mode": "hybrid",
-  "tickers": [
-    "RKLB",
-    "RDDT",
-    "AXON",
-    "IREN",
-    "LUNR",
-    "PONY",
-    "MU",
-    "CRWD",
-    "PL"
-  ],
+  "snapshot_date": "2026-05-11T10:37:19.047979+00:00",
+  "week_starting": "2026-05-11",
   "summary": {
     "fundamental_item_count": 28,
     "durable_item_count": 1,
@@ -703,9 +690,5 @@
         "notes": "brave=missing_key; newsapi=missing_key; sec_news=1; gdelt_error=Expecting value: line 1 column 1 (char 0); gpt_classifier=skipped; alpha=ok; The next earnings report is scheduled for June 3, 2026, which will provide further insights into Planet Labs' financial performance and strategic initiatives.; source_mode=hybrid; gpt_news=1; free_news=0; gpt_fallback=yes; free_sparse=yes; free_earnings_incomplete=yes"
       }
     }
-  ],
-  "news_counts": {
-    "current": 24,
-    "archive": 179
-  }
+  ]
 }
