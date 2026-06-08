@@ -3550,37 +3550,5 @@
     "matched_keyword": "outlook",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "The strong financial performance and strategic investments highlight Micron's commitment to innovation and capacity expansion, reinforcing its competitive position in the memory and storage solutions market."
-  },
-  {
-    "id": "PL:https://www.nasdaq.com/articles/planet-labs-pbc-pl-reports-break-even-earnings-q1",
-    "ticker": "PL",
-    "headline": "Planet Labs PBC Reports Break-Even Earnings for Q1",
-    "summary": "Planet Labs reported break-even earnings per share for Q1, surpassing analyst expectations of a loss of $0.05, with revenues of $66.27 million exceeding estimates by 6.61%.",
-    "source": "Nasdaq",
-    "url": "https://www.nasdaq.com/articles/planet-labs-pbc-pl-reports-break-even-earnings-q1",
-    "datetime": "2025-06-04T00:00:00+00:00",
-    "theme": "earnings",
-    "theme_label": "Earnings Quality",
-    "priority": "high",
-    "horizon_fit": "possible",
-    "matched_keyword": "earnings",
-    "thesis_signal": "thesis_confirming",
-    "why_it_matters": "Achieving break-even earnings indicates progress toward profitability, aligning with the thesis of Planet Labs' potential for sustainable growth."
-  },
-  {
-    "id": "CRWD:https://crowdstrike.gcs-web.com/news-releases/news-release-details/crowdstrike-reports-first-quarter-fiscal-year-2026-financial",
-    "ticker": "CRWD",
-    "headline": "CrowdStrike Reports First Quarter Fiscal Year 2026 Financial Results",
-    "summary": "CrowdStrike reported Q1 FY2026 revenue of $1.10 billion, a 23.8% year-over-year increase, and an EPS of $0.73, exceeding estimates, with Annual Recurring Revenue reaching $4.25 billion.",
-    "source": "CrowdStrike Holdings, Inc.",
-    "url": "https://crowdstrike.gcs-web.com/news-releases/news-release-details/crowdstrike-reports-first-quarter-fiscal-year-2026-financial",
-    "datetime": "2025-06-03T00:00:00+00:00",
-    "theme": "earnings",
-    "theme_label": "Earnings Quality",
-    "priority": "high",
-    "horizon_fit": "possible",
-    "matched_keyword": "eps",
-    "thesis_signal": "thesis_confirming",
-    "why_it_matters": "Strong financial performance indicates effective execution of growth strategies and robust demand for cybersecurity solutions."
   }
 ]
