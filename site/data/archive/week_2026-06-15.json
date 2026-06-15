@@ -1,19 +1,6 @@
 {
-  "generated_at": "2026-06-15T13:11:17.033228+00:00",
-  "mode": "weekly",
-  "model": "gpt-4.1-mini",
-  "data_fetch_mode": "hybrid",
-  "tickers": [
-    "RKLB",
-    "RDDT",
-    "AXON",
-    "IREN",
-    "LUNR",
-    "PONY",
-    "MU",
-    "CRWD",
-    "PL"
-  ],
+  "snapshot_date": "2026-06-15T13:11:17.033228+00:00",
+  "week_starting": "2026-06-15",
   "summary": {
     "fundamental_item_count": 0,
     "durable_item_count": 0,
@@ -217,9 +204,5 @@
         "notes": null
       }
     }
-  ],
-  "news_counts": {
-    "current": 0,
-    "archive": 222
-  }
+  ]
 }
