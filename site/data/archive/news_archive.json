@@ -1,5 +1,37 @@
 [
   {
+    "id": "CRWD:https://www.sec.gov/Archives/edgar/data/1535527/000110465926076376/tm2618192d1_8k.htm",
+    "ticker": "CRWD",
+    "headline": "CRWD SEC filing 8-K",
+    "summary": "Material corporate update filed with SEC; may include earnings, strategy, governance, or legal changes.",
+    "source": "SEC",
+    "url": "https://www.sec.gov/Archives/edgar/data/1535527/000110465926076376/tm2618192d1_8k.htm",
+    "datetime": "2026-06-22T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "earnings",
+    "thesis_signal": "noise",
+    "why_it_matters": "Primary-source regulatory filing."
+  },
+  {
+    "id": "LUNR:https://www.stocktitan.net/news/LUNR/intuitive-machines-reports-first-quarter-2026-financial-results-zcbrjao1l7x0.html",
+    "ticker": "LUNR",
+    "headline": "Intuitive Machines Reports Record Q1 2026 Revenue and Backlog",
+    "summary": "Intuitive Machines reported Q1 2026 revenue of $186.7 million, nearly tripling the previous year, and a record backlog of $1.1 billion, driven by the Lanteris acquisition and ongoing contracts.",
+    "source": "StockTitan",
+    "url": "https://www.stocktitan.net/news/LUNR/intuitive-machines-reports-first-quarter-2026-financial-results-zcbrjao1l7x0.html",
+    "datetime": "2026-06-02T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "revenue",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "Demonstrates strong growth and operational efficiency, reinforcing the company's competitive position in the space industry."
+  },
+  {
     "id": "IREN:https://www.globenewswire.com/news-release/2026/06/01/3304211/0/en/IREN-Closes-3-65bn-Investment-Grade-GPU-Financing.html",
     "ticker": "IREN",
     "headline": "IREN Closes $3.65bn Investment-Grade GPU Financing",
@@ -19,7 +51,7 @@
     "id": "RKLB:https://www.foreignpolicyjournal.com/2026/05/27/rocket-lab-rklb-secures-816m-sda-contract-after-missile-defense-solution-clears-review/",
     "ticker": "RKLB",
     "headline": "Rocket Lab Secures $816 Million SDA Contract After Missile Defense Solution Clears Review",
-    "summary": "Rocket Lab's missile defense solution has passed the Space Development Agency's system requirements review, leading to an $816 million contract, bolstering its position in the defense sector.",
+    "summary": "Rocket Lab's missile defense solution passed the Space Development Agency's system requirements review, leading to an $816 million contract award, enhancing its position in the defense sector.",
     "source": "Foreign Policy Journal",
     "url": "https://www.foreignpolicyjournal.com/2026/05/27/rocket-lab-rklb-secures-816m-sda-contract-after-missile-defense-solution-clears-review/",
     "datetime": "2026-05-27T00:00:00+00:00",
@@ -29,7 +61,7 @@
     "horizon_fit": "possible",
     "matched_keyword": "miss",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "This contract diversifies Rocket Lab's revenue streams and demonstrates its capability in defense applications, contributing to its long-term growth and competitive advantage."
+    "why_it_matters": "This contract strengthens Rocket Lab's foothold in the defense industry, diversifying its revenue streams and bolstering its long-term growth prospects."
   },
   {
     "id": "AXON:https://www.marketbeat.com/instant-alerts/axon-enterprise-sees-ai-counter-drone-demand-fueling-next-growth-wave-2026-05-27/",
@@ -50,8 +82,8 @@
   {
     "id": "PONY:https://www.marketbeat.com/earnings/reports/2026-5-26-pony-ai-inc-stock/",
     "ticker": "PONY",
-    "headline": "Pony AI Reports Q1 2026 Earnings with Revenue Growth and Robotaxi Expansion",
-    "summary": "Pony AI reported Q1 2026 earnings on May 26, 2026, with revenue of $34.25 million, exceeding analyst expectations of $22.30 million. The company also raised its 2026 robotaxi revenue target to over 3.5 times the 2025 level and plans to expand its robotaxi fleet to over 3,500 units by year-end.",
+    "headline": "Pony AI Reports Q1 2026 Earnings with 145% Revenue Growth",
+    "summary": "Pony AI announced Q1 2026 earnings on May 26, 2026, reporting an EPS of -$0.09, which beat the consensus estimate of -$0.12 by $0.03. Quarterly revenue was reported to be $34.25 million, above the consensus estimate of $22.30 million. The company also raised its full-year targets, aiming to exceed 3,500 robotaxi vehicles and grow robotaxi revenue to more than 3.5x 2025 levels.",
     "source": "MarketBeat",
     "url": "https://www.marketbeat.com/earnings/reports/2026-5-26-pony-ai-inc-stock/",
     "datetime": "2026-05-26T00:00:00+00:00",
@@ -61,7 +93,23 @@
     "horizon_fit": "possible",
     "matched_keyword": "earnings",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "The strong revenue growth and ambitious expansion plans indicate robust demand for Pony AI's autonomous driving services, supporting the long-term investment thesis focused on the company's scalable business model and technological leadership in the autonomous vehicle sector."
+    "why_it_matters": "The significant revenue growth and raised targets indicate strong demand for Pony AI's autonomous driving technology, supporting the long-term investment thesis focused on the scalability and adoption of autonomous vehicles."
+  },
+  {
+    "id": "LUNR:https://www.streetinsider.com/dr/news.php?id=26545780",
+    "ticker": "LUNR",
+    "headline": "Intuitive Machines Reaffirms 2026 Revenue Guidance Amid Contract Wins",
+    "summary": "Intuitive Machines reaffirmed its 2026 revenue guidance of $900 million to $1 billion, supported by recent contract awards and a strong backlog.",
+    "source": "StreetInsider",
+    "url": "https://www.streetinsider.com/dr/news.php?id=26545780",
+    "datetime": "2026-05-26T00:00:00+00:00",
+    "theme": "guidance",
+    "theme_label": "Guidance / Outlook",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "guidance",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "Reaffirming guidance indicates confidence in sustained growth, aligning with long-term investment expectations."
   },
   {
     "id": "RDDT:https://www.tradingview.com/news/zacks%3A2b32799cf094b%3A0-reddit-q1-earnings-beat-estimates-revenues-up-y-y-shares-rise/",
@@ -94,22 +142,6 @@
     "matched_keyword": "guidance",
     "thesis_signal": "noise",
     "why_it_matters": "Primary-source regulatory filing."
-  },
-  {
-    "id": "LUNR:https://www.stocktitan.net/news/LUNR/intuitive-machines-reports-first-quarter-2026-financial-results-zcbrjao1l7x0.html",
-    "ticker": "LUNR",
-    "headline": "Intuitive Machines Reports Record Q1 2026 Revenue and Backlog",
-    "summary": "Intuitive Machines announced Q1 2026 revenue of $186.7 million, nearly tripling the prior year, and a record quarter-end backlog of $1.1 billion, driven by the Lanteris acquisition and new contracts.",
-    "source": "StockTitan",
-    "url": "https://www.stocktitan.net/news/LUNR/intuitive-machines-reports-first-quarter-2026-financial-results-zcbrjao1l7x0.html",
-    "datetime": "2026-05-15T00:00:00+00:00",
-    "theme": "earnings",
-    "theme_label": "Earnings Quality",
-    "priority": "high",
-    "horizon_fit": "possible",
-    "matched_keyword": "revenue",
-    "thesis_signal": "thesis_confirming",
-    "why_it_matters": "The significant revenue growth and substantial backlog enhance Intuitive Machines' position in the space industry, supporting its long-term growth strategy and competitive moat."
   },
   {
     "id": "IREN:https://www.sec.gov/Archives/edgar/data/1878848/000114036126021285/ef20073507_8k.htm",
@@ -222,6 +254,22 @@
     "matched_keyword": "guidance",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "The reaffirmation of revenue guidance, supported by a strong contract backlog, indicates robust demand for Intuitive Machines' services and a solid foundation for sustained growth, aligning with a positive long-term investment thesis."
+  },
+  {
+    "id": "LUNR:https://stockanalysis.com/stocks/lunr/transcripts/",
+    "ticker": "LUNR",
+    "headline": "Intuitive Machines Announces Acquisition of Goonhilly Earth Station",
+    "summary": "Intuitive Machines announced a definitive agreement to acquire Goonhilly Earth Station and its COMSAT subsidiary, expanding ground segment and global communications capabilities.",
+    "source": "StockAnalysis",
+    "url": "https://stockanalysis.com/stocks/lunr/transcripts/",
+    "datetime": "2026-05-14T00:00:00+00:00",
+    "theme": "merger_acquisition",
+    "theme_label": "M&A / Strategic Deal",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "acquisition",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "Enhancing ground segment and communications capabilities supports the company's long-term growth and service diversification."
   },
   {
     "id": "LUNR:https://www.marketbeat.com/earnings/reports/2026-3-24-intuitive-machines-inc-stock/",
@@ -398,6 +446,22 @@
     "matched_keyword": "earnings",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "The strategic partnership with NVIDIA and the substantial AI Cloud contract are pivotal for IREN's transition to AI cloud services, aligning with its long-term investment thesis."
+  },
+  {
+    "id": "RKLB:https://www.fool.com/earnings/call-transcripts/2026/05/08/rocket-lab-rklb-q1-2026-earnings-transcript/",
+    "ticker": "RKLB",
+    "headline": "Rocket Lab's Q1 2026 Earnings Report: Record Revenue and Backlog",
+    "summary": "Rocket Lab reported Q1 2026 revenue of $200.3 million, a 63.5% year-over-year increase, and a record backlog of $2.2 billion, indicating strong demand for its services.",
+    "source": "The Motley Fool",
+    "url": "https://www.fool.com/earnings/call-transcripts/2026/05/08/rocket-lab-rklb-q1-2026-earnings-transcript/",
+    "datetime": "2026-05-08T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "earnings",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The strong financial performance and substantial backlog suggest robust future growth, supporting the company's long-term investment thesis."
   },
   {
     "id": "RKLB:https://www.sec.gov/Archives/edgar/data/1819994/000181999426000028/rklb-20260331.htm",
@@ -654,6 +718,38 @@
     "matched_keyword": "launch",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "The mobile app initiative reflects CrowdStrike's commitment to innovation and user engagement, which are key drivers of its long-term growth strategy."
+  },
+  {
+    "id": "AXON:https://www.nasdaq.com/press-release/axon-reports-q1-2026-revenue-of-807-million-up-34-year-over-year",
+    "ticker": "AXON",
+    "headline": "Axon Reports Q1 2026 Revenue of $807 Million, Up 34% Year Over Year",
+    "summary": "Axon reported Q1 2026 revenue of $807 million, a 34% increase from the previous year, driven by strong demand across hardware and software segments.",
+    "source": "Nasdaq.com",
+    "url": "https://www.nasdaq.com/press-release/axon-reports-q1-2026-revenue-of-807-million-up-34-year-over-year",
+    "datetime": "2026-05-06T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "revenue",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "Strong financial performance indicates robust demand for Axon's products, supporting its growth trajectory."
+  },
+  {
+    "id": "PONY:https://www.stocktitan.net/news/PONY/pony-ai-targets-3-000-robotaxis-in-over-20-cities-in-2026-expects-eht75m5wkq5a.html",
+    "ticker": "PONY",
+    "headline": "Pony AI Targets 3,000 Robotaxis in Over 20 Cities in 2026",
+    "summary": "Pony AI reported accelerating robotaxi commercialization and financial improvement, targeting over 3,000 robotaxis in more than 20 cities in 2026, with nearly half overseas. Q4 2025 robotaxi revenue rose 160% year-over-year, fare-charging revenue surged over 500%, and the total fleet reached 1,446 units.",
+    "source": "StockTitan",
+    "url": "https://www.stocktitan.net/news/PONY/pony-ai-targets-3-000-robotaxis-in-over-20-cities-in-2026-expects-eht75m5wkq5a.html",
+    "datetime": "2026-05-06T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "revenue",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The expansion into multiple cities, including international markets, demonstrates Pony AI's growing competitive moat and its ability to scale operations, reinforcing the long-term investment thesis centered on global market penetration and technological leadership."
   },
   {
     "id": "CRWD:https://www.sec.gov/Archives/edgar/data/1535527/000110465926055599/tm2532333-4_def14a.htm",
@@ -2226,18 +2322,18 @@
   {
     "id": "LUNR:https://www.stocktitan.net/news/LUNR/intuitive-machines-reports-fourth-quarter-and-full-year-2025-zbw6x6tn0q13.html",
     "ticker": "LUNR",
-    "headline": "Intuitive Machines Guides $900M-$1B 2026 Revenue",
-    "summary": "Intuitive Machines provided guidance for 2026 revenue between $900 million and $1 billion, with positive adjusted EBITDA, following the completion of significant acquisitions and a strong contract backlog.",
+    "headline": "Intuitive Machines Completes $800 Million Acquisition of Lanteris",
+    "summary": "Intuitive Machines completed the $800 million acquisition of Lanteris Space Systems, aiming to enhance satellite capabilities and expand service offerings.",
     "source": "StockTitan",
     "url": "https://www.stocktitan.net/news/LUNR/intuitive-machines-reports-fourth-quarter-and-full-year-2025-zbw6x6tn0q13.html",
     "datetime": "2026-03-19T00:00:00+00:00",
-    "theme": "guidance",
-    "theme_label": "Guidance / Outlook",
+    "theme": "merger_acquisition",
+    "theme_label": "M&A / Strategic Deal",
     "priority": "high",
     "horizon_fit": "possible",
-    "matched_keyword": "guidance",
+    "matched_keyword": "acquisition",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "The revenue guidance reflects the company's growth strategy and the impact of recent acquisitions, which could drive long-term growth and strengthen its competitive position."
+    "why_it_matters": "The acquisition strengthens the company's satellite capabilities, contributing to its competitive moat and growth potential."
   },
   {
     "id": "RKLB:https://www.nasdaq.com/press-release/rocket-lab-secures-190m-contract-20x-haste-launches-cements-hypersonics-leadership",
@@ -3603,7 +3699,7 @@
     "id": "AXON:https://www.axon.com/newsroom/press-releases/axon-to-acquire-carbyne",
     "ticker": "AXON",
     "headline": "Axon to Acquire Carbyne, Uniting Cloud Infrastructure and AI to Redefine the 911 Experience",
-    "summary": "Axon announces acquisition of Carbyne to enhance 911 services with cloud-native technology and AI integration.",
+    "summary": "Axon announced an agreement to acquire Carbyne, aiming to modernize emergency communications by integrating cloud-native technology and AI.",
     "source": "Axon.com",
     "url": "https://www.axon.com/newsroom/press-releases/axon-to-acquire-carbyne",
     "datetime": "2025-11-04T00:00:00+00:00",
@@ -3613,7 +3709,7 @@
     "horizon_fit": "possible",
     "matched_keyword": "fine",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "Strengthens Axon's position in emergency communications, expanding its product suite and market reach, aligning with its growth strategy."
+    "why_it_matters": "This acquisition enhances Axon's capabilities in emergency response, reinforcing its competitive moat in the public safety sector."
   },
   {
     "id": "LUNR:https://www.stocktitan.net/news/LUNR/intuitive-machines-to-acquire-lanteris-space-systems-creating-the-fqw4o2kwa9eu.html",
@@ -3726,6 +3822,22 @@
     "matched_keyword": "earnings",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "The financial outperformance highlights Micron's operational efficiency and its capacity to meet the growing demand for memory solutions, supporting its long-term investment thesis."
+  },
+  {
+    "id": "AXON:https://www.axon.com/newsroom/press-releases/axon-to-acquire-prepared",
+    "ticker": "AXON",
+    "headline": "Axon to Acquire AI-Powered 911 Communications Company Prepared",
+    "summary": "Axon announced an agreement to acquire Prepared, an AI-driven emergency communications platform, to strengthen its public safety ecosystem.",
+    "source": "Axon.com",
+    "url": "https://www.axon.com/newsroom/press-releases/axon-to-acquire-prepared",
+    "datetime": "2025-09-23T00:00:00+00:00",
+    "theme": "merger_acquisition",
+    "theme_label": "M&A / Strategic Deal",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "acquire",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "Integrating Prepared's technology enhances Axon's emergency response capabilities, bolstering its competitive position."
   },
   {
     "id": "CRWD:https://ir.crowdstrike.com/news-releases/news-release-details/crowdstrike-unveils-falcon-platform-fall-release-lead",
