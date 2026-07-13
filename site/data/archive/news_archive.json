@@ -1,5 +1,85 @@
 [
   {
+    "id": "RKLB:https://www.sec.gov/Archives/edgar/data/1819994/000175392626001085/g085783_8k.htm",
+    "ticker": "RKLB",
+    "headline": "RKLB SEC filing 8-K",
+    "summary": "Material corporate update filed with SEC; may include earnings, strategy, governance, or legal changes.",
+    "source": "SEC",
+    "url": "https://www.sec.gov/Archives/edgar/data/1819994/000175392626001085/g085783_8k.htm",
+    "datetime": "2026-06-29T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "earnings",
+    "thesis_signal": "noise",
+    "why_it_matters": "Primary-source regulatory filing."
+  },
+  {
+    "id": "RKLB:https://www.globenewswire.com/news-release/2026/06/26/2256789/0/en/Rocket-Lab-Completes-10th-Consecutive-Launch-with-100-Mission-Success-for-Synspective.html",
+    "ticker": "RKLB",
+    "headline": "Rocket Lab Completes 10th Consecutive Launch with 100% Mission Success for Synspective",
+    "summary": "Rocket Lab successfully completed its 10th consecutive launch with a 100% mission success rate for Synspective, demonstrating its reliable launch services and reinforcing its position in the small satellite launch market.",
+    "source": "GlobeNewswire",
+    "url": "https://www.globenewswire.com/news-release/2026/06/26/2256789/0/en/Rocket-Lab-Completes-10th-Consecutive-Launch-with-100-Mission-Success-for-Synspective.html",
+    "datetime": "2026-06-26T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "miss",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "This achievement underscores Rocket Lab's consistent performance and reliability, enhancing its reputation and competitive moat in the small satellite launch industry, which is crucial for long-term growth."
+  },
+  {
+    "id": "RKLB:https://spacenews.com/rocket-lab-electron-nasa-missions/",
+    "ticker": "RKLB",
+    "headline": "Rocket Lab Stock Rises as NASA Selects Electron for Two Missions",
+    "summary": "NASA has selected Rocket Lab's Electron rocket for two upcoming missions, highlighting the company's growing role in government contracts and its expanding market presence.",
+    "source": "SpaceNews",
+    "url": "https://spacenews.com/rocket-lab-electron-nasa-missions/",
+    "datetime": "2026-06-25T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "miss",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "Securing NASA contracts enhances Rocket Lab's credibility and provides a steady revenue stream, supporting its long-term business model focused on reliable and cost-effective launch services."
+  },
+  {
+    "id": "MU:https://www.nasdaq.com/press-release/micron-technology-inc-reports-record-results-third-quarter-fiscal-2026-2026-06-24",
+    "ticker": "MU",
+    "headline": "Micron Technology, Inc. Reports Record Results for the Third Quarter of Fiscal 2026",
+    "summary": "Micron reported record fiscal Q3 2026 results, with revenue of $41.46 billion and GAAP net income of $28.24 billion, driven by strong demand in the AI sector.",
+    "source": "Nasdaq",
+    "url": "https://www.nasdaq.com/press-release/micron-technology-inc-reports-record-results-third-quarter-fiscal-2026-2026-06-24",
+    "datetime": "2026-06-24T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "revenue",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The strong financial performance underscores Micron's effective strategy in capitalizing on the growing AI market, enhancing its competitive moat and financial stability for long-term investors."
+  },
+  {
+    "id": "MU:https://www.micron.com/about/press/news",
+    "ticker": "MU",
+    "headline": "Micron Technology, Inc. Reports Record Results for the Third Quarter of Fiscal 2026",
+    "summary": "Micron reported record fiscal Q3 2026 results, with revenue of $41.46 billion and GAAP net income of $28.24 billion, driven by strong demand in the AI sector.",
+    "source": "Micron Technology Newsroom",
+    "url": "https://www.micron.com/about/press/news",
+    "datetime": "2026-06-24T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "revenue",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The strong financial performance underscores Micron's successful execution in the AI-driven memory market, supporting its long-term growth prospects."
+  },
+  {
     "id": "CRWD:https://www.sec.gov/Archives/edgar/data/1535527/000110465926076376/tm2618192d1_8k.htm",
     "ticker": "CRWD",
     "headline": "CRWD SEC filing 8-K",
@@ -14,22 +94,6 @@
     "matched_keyword": "earnings",
     "thesis_signal": "noise",
     "why_it_matters": "Primary-source regulatory filing."
-  },
-  {
-    "id": "LUNR:https://www.stocktitan.net/news/LUNR/intuitive-machines-reports-first-quarter-2026-financial-results-zcbrjao1l7x0.html",
-    "ticker": "LUNR",
-    "headline": "Intuitive Machines Reports Record Q1 2026 Revenue and Backlog",
-    "summary": "Intuitive Machines reported Q1 2026 revenue of $186.7 million, nearly tripling the previous year, and a record backlog of $1.1 billion, driven by the Lanteris acquisition and ongoing contracts.",
-    "source": "StockTitan",
-    "url": "https://www.stocktitan.net/news/LUNR/intuitive-machines-reports-first-quarter-2026-financial-results-zcbrjao1l7x0.html",
-    "datetime": "2026-06-02T00:00:00+00:00",
-    "theme": "earnings",
-    "theme_label": "Earnings Quality",
-    "priority": "high",
-    "horizon_fit": "possible",
-    "matched_keyword": "revenue",
-    "thesis_signal": "thesis_confirming",
-    "why_it_matters": "Demonstrates strong growth and operational efficiency, reinforcing the company's competitive position in the space industry."
   },
   {
     "id": "IREN:https://www.globenewswire.com/news-release/2026/06/01/3304211/0/en/IREN-Closes-3-65bn-Investment-Grade-GPU-Financing.html",
@@ -50,8 +114,8 @@
   {
     "id": "RKLB:https://www.foreignpolicyjournal.com/2026/05/27/rocket-lab-rklb-secures-816m-sda-contract-after-missile-defense-solution-clears-review/",
     "ticker": "RKLB",
-    "headline": "Rocket Lab Secures $816 Million SDA Contract After Missile Defense Solution Clears Review",
-    "summary": "Rocket Lab's missile defense solution passed the Space Development Agency's system requirements review, leading to an $816 million contract award, enhancing its position in the defense sector.",
+    "headline": "Rocket Lab's Missile Defense Solution Passes SDA's System Requirements Review",
+    "summary": "Rocket Lab's missile defense solution has successfully passed the Space Development Agency's System Requirements Review, leading to an $816 million contract award.",
     "source": "Foreign Policy Journal",
     "url": "https://www.foreignpolicyjournal.com/2026/05/27/rocket-lab-rklb-secures-816m-sda-contract-after-missile-defense-solution-clears-review/",
     "datetime": "2026-05-27T00:00:00+00:00",
@@ -61,7 +125,7 @@
     "horizon_fit": "possible",
     "matched_keyword": "miss",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "This contract strengthens Rocket Lab's foothold in the defense industry, diversifying its revenue streams and bolstering its long-term growth prospects."
+    "why_it_matters": "Securing this contract validates Rocket Lab's technical capabilities and establishes it as a key player in the defense sector, contributing to its long-term growth prospects."
   },
   {
     "id": "AXON:https://www.marketbeat.com/instant-alerts/axon-enterprise-sees-ai-counter-drone-demand-fueling-next-growth-wave-2026-05-27/",
@@ -82,8 +146,8 @@
   {
     "id": "PONY:https://www.marketbeat.com/earnings/reports/2026-5-26-pony-ai-inc-stock/",
     "ticker": "PONY",
-    "headline": "Pony AI Reports Q1 2026 Earnings with 145% Revenue Growth",
-    "summary": "Pony AI announced Q1 2026 earnings on May 26, 2026, reporting an EPS of -$0.09, which beat the consensus estimate of -$0.12 by $0.03. Quarterly revenue was reported to be $34.25 million, above the consensus estimate of $22.30 million. The company also raised its full-year targets, aiming to exceed 3,500 robotaxi vehicles and grow robotaxi revenue to more than 3.5x 2025 levels.",
+    "headline": "Pony AI's Q1 2026 Earnings Report",
+    "summary": "Pony AI reported Q1 2026 earnings on May 26, 2026, with an EPS of -$0.09, beating analysts' expectations of -$0.12, and revenue of $34.25 million, surpassing the consensus estimate of $22.30 million.",
     "source": "MarketBeat",
     "url": "https://www.marketbeat.com/earnings/reports/2026-5-26-pony-ai-inc-stock/",
     "datetime": "2026-05-26T00:00:00+00:00",
@@ -93,7 +157,7 @@
     "horizon_fit": "possible",
     "matched_keyword": "earnings",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "The significant revenue growth and raised targets indicate strong demand for Pony AI's autonomous driving technology, supporting the long-term investment thesis focused on the scalability and adoption of autonomous vehicles."
+    "why_it_matters": "The strong earnings and revenue performance indicate robust demand for Pony AI's autonomous mobility services, supporting the long-term investment thesis focused on the company's growth in autonomous vehicle technology and services."
   },
   {
     "id": "LUNR:https://www.streetinsider.com/dr/news.php?id=26545780",
@@ -142,6 +206,22 @@
     "matched_keyword": "guidance",
     "thesis_signal": "noise",
     "why_it_matters": "Primary-source regulatory filing."
+  },
+  {
+    "id": "LUNR:https://www.stocktitan.net/news/LUNR/intuitive-machines-reports-first-quarter-2026-financial-results-zcbrjao1l7x0.html",
+    "ticker": "LUNR",
+    "headline": "Intuitive Machines Maintains 2026 Revenue Guidance of $900 Million\u2013$1 Billion",
+    "summary": "The company reaffirmed its 2026 revenue guidance, supported by a record backlog and new contract awards, indicating confidence in its growth trajectory.",
+    "source": "StockTitan",
+    "url": "https://www.stocktitan.net/news/LUNR/intuitive-machines-reports-first-quarter-2026-financial-results-zcbrjao1l7x0.html",
+    "datetime": "2026-05-14T00:00:00+00:00",
+    "theme": "guidance",
+    "theme_label": "Guidance / Outlook",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "guidance",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "Demonstrates management's confidence in the company's growth prospects and strategic direction."
   },
   {
     "id": "IREN:https://www.sec.gov/Archives/edgar/data/1878848/000114036126021285/ef20073507_8k.htm",
@@ -464,6 +544,22 @@
     "why_it_matters": "The strong financial performance and substantial backlog suggest robust future growth, supporting the company's long-term investment thesis."
   },
   {
+    "id": "IREN:https://www.marketbeat.com/earnings/reports/2026-5-8-iris-energy-ltd-stock/",
+    "ticker": "IREN",
+    "headline": "IREN Acquires Mirantis to Enhance AI Cloud Capabilities",
+    "summary": "IREN has acquired Mirantis, including 650 employees and the k0rdent AI platform, aiming to strengthen provisioning, monitoring, and enterprise go-to-market capabilities in its global data center footprint.",
+    "source": "MarketBeat",
+    "url": "https://www.marketbeat.com/earnings/reports/2026-5-8-iris-energy-ltd-stock/",
+    "datetime": "2026-05-08T00:00:00+00:00",
+    "theme": "merger_acquisition",
+    "theme_label": "M&A / Strategic Deal",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "acquire",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The acquisition of Mirantis bolsters IREN's AI Cloud offerings, supporting its competitive position and growth prospects in the AI sector."
+  },
+  {
     "id": "RKLB:https://www.sec.gov/Archives/edgar/data/1819994/000181999426000028/rklb-20260331.htm",
     "ticker": "RKLB",
     "headline": "RKLB SEC filing 10-Q",
@@ -638,6 +734,22 @@
     "matched_keyword": "sec",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "This contract solidifies IREN's position in the AI cloud services market, enhancing its revenue base and operational scale, which is crucial for long-term growth."
+  },
+  {
+    "id": "IREN:https://iren.gcs-web.com/news-releases/news-release-details/iren-announces-strategic-partnership-nvidia",
+    "ticker": "IREN",
+    "headline": "IREN Announces Strategic Partnership with NVIDIA",
+    "summary": "IREN has entered into a strategic partnership with NVIDIA, involving a $2.1 billion investment tied to GPU deployments and a $3.4 billion five-year AI Cloud contract for NVIDIA's internal workloads.",
+    "source": "IREN Limited Press Release",
+    "url": "https://iren.gcs-web.com/news-releases/news-release-details/iren-announces-strategic-partnership-nvidia",
+    "datetime": "2026-05-07T00:00:00+00:00",
+    "theme": "product_strategy",
+    "theme_label": "Product / Strategy",
+    "priority": "high",
+    "horizon_fit": "durable",
+    "matched_keyword": "contract",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "This partnership enhances IREN's position in the AI Cloud market, leveraging NVIDIA's technology to strengthen its competitive moat and drive future growth."
   },
   {
     "id": "AXON:https://www.sec.gov/Archives/edgar/data/1069183/000162828026031285/axon-20260506.htm",
@@ -931,7 +1043,7 @@
     "id": "RDDT:https://www.marketbeat.com/stocks/NYSE/RDDT/earnings/",
     "ticker": "RDDT",
     "headline": "Reddit's Q1 2026 Earnings Report",
-    "summary": "Reddit reported Q1 2026 earnings on April 30, 2026, with an EPS of $1.01, surpassing analysts' expectations of $0.62, and revenue of $663.41 million, a 69.1% year-over-year increase.",
+    "summary": "Reddit reported Q1 2026 earnings on April 30, 2026, with an EPS of $1.01, surpassing the consensus estimate of $0.62, and revenue of $663.41 million, exceeding expectations of $607.74 million.",
     "source": "MarketBeat",
     "url": "https://www.marketbeat.com/stocks/NYSE/RDDT/earnings/",
     "datetime": "2026-04-30T00:00:00+00:00",
@@ -941,7 +1053,7 @@
     "horizon_fit": "possible",
     "matched_keyword": "earnings",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "Demonstrates Reddit's strong financial performance and growth, supporting its long-term investment thesis focused on user engagement and advertising revenue expansion."
+    "why_it_matters": "The strong earnings performance indicates Reddit's robust financial health, supporting its long-term growth prospects and competitive position in the social media industry."
   },
   {
     "id": "RDDT:https://stockanalysis.com/stocks/rddt/revenue/",
@@ -3902,6 +4014,22 @@
     "matched_keyword": "earnings",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "The fiscal year-end earnings report will offer a comprehensive overview of Micron's annual performance, providing valuable information for evaluating its competitive position and growth trajectory in the semiconductor industry."
+  },
+  {
+    "id": "PONY:https://www.marketbeat.com/earnings/reports/2025-8-12-pony-ai-inc-stock/",
+    "ticker": "PONY",
+    "headline": "Pony AI's Global Expansion in Q2 2025",
+    "summary": "Pony AI secured fully driverless permits across all four Tier-1 Chinese cities and launched trials or partnerships in Dubai, Seoul, and Luxembourg, indicating significant global expansion efforts.",
+    "source": "MarketBeat",
+    "url": "https://www.marketbeat.com/earnings/reports/2025-8-12-pony-ai-inc-stock/",
+    "datetime": "2025-08-12T00:00:00+00:00",
+    "theme": "legal_regulatory",
+    "theme_label": "Legal / Regulatory",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "sec",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The global expansion efforts highlight Pony AI's strategic initiatives to establish a strong international presence, aligning with the long-term investment thesis centered on the company's competitive moat and growth potential in the autonomous vehicle market."
   },
   {
     "id": "RDDT:https://www.nasdaq.com/articles/reddit-inc-rddt-surpasses-q2-earnings-and-revenue-estimates",
