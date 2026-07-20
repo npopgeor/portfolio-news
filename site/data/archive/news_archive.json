@@ -1,5 +1,101 @@
 [
   {
+    "id": "PL:https://www.bloomberg.com/news/articles/2026-07-06/planet-labs-reports-record-revenue-growth-q2-2026",
+    "ticker": "PL",
+    "headline": "Planet Labs PBC Reports Record Revenue Growth in Q2 2026 Earnings",
+    "summary": "Planet Labs PBC reported a 25% increase in revenue for Q2 2026, driven by increased demand for satellite imagery and analytics services.",
+    "source": "Bloomberg",
+    "url": "https://www.bloomberg.com/news/articles/2026-07-06/planet-labs-reports-record-revenue-growth-q2-2026",
+    "datetime": "2026-07-06T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "earnings",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The strong financial performance indicates robust demand for Planet Labs' services, supporting the sustainability of its business model and competitive position in the market."
+  },
+  {
+    "id": "IREN:https://www.nasdaq.com/press-release/iren-appoints-chief-product-officer-and-chief-development-officer-2026-07-02",
+    "ticker": "IREN",
+    "headline": "IREN Appoints Chief Product Officer and Chief Development Officer",
+    "summary": "IREN Limited announced the appointment of Kambiz Aghili as Chief Product Officer and Michael Nudelman as Chief Development Officer to strengthen its development and product teams as it expands its AI Cloud offering.",
+    "source": "Nasdaq",
+    "url": "https://www.nasdaq.com/press-release/iren-appoints-chief-product-officer-and-chief-development-officer-2026-07-02",
+    "datetime": "2026-07-02T00:00:00+00:00",
+    "theme": "capital_structure",
+    "theme_label": "Balance Sheet / Financing",
+    "priority": "medium",
+    "horizon_fit": "possible",
+    "matched_keyword": "offering",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The addition of experienced leaders in product and development roles is expected to enhance IREN's ability to scale its AI Cloud services, aligning with its long-term growth strategy in the AI infrastructure market."
+  },
+  {
+    "id": "IREN:https://www.sec.gov/Archives/edgar/data/1878848/000114036126027202/ef20077190_8k.htm",
+    "ticker": "IREN",
+    "headline": "IREN SEC filing 8-K",
+    "summary": "Material corporate update filed with SEC; may include earnings, strategy, governance, or legal changes.",
+    "source": "SEC",
+    "url": "https://www.sec.gov/Archives/edgar/data/1878848/000114036126027202/ef20077190_8k.htm",
+    "datetime": "2026-07-01T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "earnings",
+    "thesis_signal": "noise",
+    "why_it_matters": "Primary-source regulatory filing."
+  },
+  {
+    "id": "IREN:https://www.axios.com/2026/06/30/iren-warriors-ai-infrastructure",
+    "ticker": "IREN",
+    "headline": "Australian cloud company pays millions for spot on Warriors jersey",
+    "summary": "IREN has secured a major sponsorship deal with the Golden State Warriors, paying over $50 million annually for a jersey patch, aiming to raise its profile among AI startups in the Bay Area.",
+    "source": "Axios",
+    "url": "https://www.axios.com/2026/06/30/iren-warriors-ai-infrastructure",
+    "datetime": "2026-06-30T00:00:00+00:00",
+    "theme": "legal_regulatory",
+    "theme_label": "Legal / Regulatory",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "sec",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "This sponsorship enhances IREN's brand visibility and aligns with its strategic focus on AI infrastructure, potentially attracting new clients and partnerships in the AI sector."
+  },
+  {
+    "id": "LUNR:https://www.globenewswire.com/news-release/2026/06/30/2256789/0/en/Intuitive-Machines-Secures-Sixth-NASA-CLPS-Award-to-Establish-High-Volume-Lunar-Utility-Pipeline.html",
+    "ticker": "LUNR",
+    "headline": "Intuitive Machines Secures Sixth NASA CLPS Award to Establish High-Volume Lunar Utility Pipeline",
+    "summary": "Intuitive Machines has been awarded a contract under NASA's Commercial Lunar Payload Services (CLPS) program to establish a high-volume lunar utility pipeline, marking its sixth such award.",
+    "source": "GlobeNewswire",
+    "url": "https://www.globenewswire.com/news-release/2026/06/30/2256789/0/en/Intuitive-Machines-Secures-Sixth-NASA-CLPS-Award-to-Establish-High-Volume-Lunar-Utility-Pipeline.html",
+    "datetime": "2026-06-30T00:00:00+00:00",
+    "theme": "legal_regulatory",
+    "theme_label": "Legal / Regulatory",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "sec",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "This contract reinforces Intuitive Machines' position as a key player in lunar infrastructure development, aligning with its strategy to diversify revenue streams and enhance long-term growth prospects."
+  },
+  {
+    "id": "PL:no_coverage:2026-06-29",
+    "ticker": "PL",
+    "headline": "No high-confidence fundamental headline found for PL in the last 7 days",
+    "summary": "Free sources were sparse or rate-limited and GPT search did not return a reliable item after filtering.",
+    "source": "System",
+    "url": "",
+    "datetime": "2026-06-29T12:00:16.584037+00:00",
+    "theme": "product_strategy",
+    "theme_label": "Product / Strategy",
+    "priority": "medium",
+    "horizon_fit": "possible",
+    "matched_keyword": "gap_fill",
+    "thesis_signal": "noise",
+    "why_it_matters": "Coverage gap marker to avoid empty ticker cards."
+  },
+  {
     "id": "RKLB:https://www.sec.gov/Archives/edgar/data/1819994/000175392626001085/g085783_8k.htm",
     "ticker": "RKLB",
     "headline": "RKLB SEC filing 8-K",
@@ -114,8 +210,8 @@
   {
     "id": "RKLB:https://www.foreignpolicyjournal.com/2026/05/27/rocket-lab-rklb-secures-816m-sda-contract-after-missile-defense-solution-clears-review/",
     "ticker": "RKLB",
-    "headline": "Rocket Lab's Missile Defense Solution Passes SDA's System Requirements Review",
-    "summary": "Rocket Lab's missile defense solution has successfully passed the Space Development Agency's System Requirements Review, leading to an $816 million contract award.",
+    "headline": "Rocket Lab Secures $816 Million SDA Contract After Missile Defense Solution Clears Review",
+    "summary": "Rocket Lab's missile defense solution passed the Space Development Agency's system requirements review, leading to an $816 million contract for the Tracking Layer Tranche 3 program.",
     "source": "Foreign Policy Journal",
     "url": "https://www.foreignpolicyjournal.com/2026/05/27/rocket-lab-rklb-secures-816m-sda-contract-after-missile-defense-solution-clears-review/",
     "datetime": "2026-05-27T00:00:00+00:00",
@@ -125,7 +221,7 @@
     "horizon_fit": "possible",
     "matched_keyword": "miss",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "Securing this contract validates Rocket Lab's technical capabilities and establishes it as a key player in the defense sector, contributing to its long-term growth prospects."
+    "why_it_matters": "This contract positions Rocket Lab as a key player in national security space infrastructure, enhancing its long-term growth prospects in the defense sector."
   },
   {
     "id": "AXON:https://www.marketbeat.com/instant-alerts/axon-enterprise-sees-ai-counter-drone-demand-fueling-next-growth-wave-2026-05-27/",
@@ -142,6 +238,22 @@
     "matched_keyword": "revenue",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "Demonstrates Axon's expanding product offerings and strong demand in AI and counter-drone technologies, reinforcing its competitive moat and growth prospects."
+  },
+  {
+    "id": "RKLB:https://www.stocktitan.net/news/RKLB/rocket-lab-achieves-milestone-for-missile-defense-constellation-r0byq90k08ro.html",
+    "ticker": "RKLB",
+    "headline": "Rocket Lab Achieves Milestone for Missile Defense Constellation",
+    "summary": "Rocket Lab successfully passed the System Requirements Review for the Space Development Agency's Tracking Layer Tranche 3 constellation, advancing its role in missile defense capabilities.",
+    "source": "Stock Titan",
+    "url": "https://www.stocktitan.net/news/RKLB/rocket-lab-achieves-milestone-for-missile-defense-constellation-r0byq90k08ro.html",
+    "datetime": "2026-05-27T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "miss",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "This milestone confirms Rocket Lab's technical readiness and validates its approach to delivering space infrastructure, strengthening its position in the defense sector."
   },
   {
     "id": "PONY:https://www.marketbeat.com/earnings/reports/2026-5-26-pony-ai-inc-stock/",
@@ -174,6 +286,38 @@
     "matched_keyword": "guidance",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "Reaffirming guidance indicates confidence in sustained growth, aligning with long-term investment expectations."
+  },
+  {
+    "id": "PONY:https://cnevpost.com/2026/05/26/pony-ai-raises-2026-robotaxi-revenue-target/",
+    "ticker": "PONY",
+    "headline": "Pony AI raises 2026 robotaxi revenue target to 3.5 times of 2025 level",
+    "summary": "Pony AI increased its 2026 robotaxi revenue target to over 3.5 times the 2025 level, up from the previously expected threefold growth, and raised its global robotaxi fleet target for the end of 2026 to over 3,500 vehicles from the previously expected 3,000.",
+    "source": "CnEVPost",
+    "url": "https://cnevpost.com/2026/05/26/pony-ai-raises-2026-robotaxi-revenue-target/",
+    "datetime": "2026-05-26T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "revenue",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "This significant upward revision in revenue and fleet targets underscores Pony AI's strong growth trajectory in the autonomous vehicle sector, reinforcing its competitive position and long-term investment appeal."
+  },
+  {
+    "id": "LUNR:https://www.globenewswire.com/news-release/2026/05/18/2251234/0/en/Intuitive-Machines-Announces-Two-Prime-Lunar-Reconnaissance-Contracts.html",
+    "ticker": "LUNR",
+    "headline": "Intuitive Machines Announces Two Prime Lunar Reconnaissance Contracts",
+    "summary": "The company has secured two prime contracts for lunar reconnaissance missions, expanding its footprint in lunar exploration.",
+    "source": "GlobeNewswire",
+    "url": "https://www.globenewswire.com/news-release/2026/05/18/2251234/0/en/Intuitive-Machines-Announces-Two-Prime-Lunar-Reconnaissance-Contracts.html",
+    "datetime": "2026-05-18T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "miss",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "These contracts enhance Intuitive Machines' capabilities in lunar reconnaissance, supporting its long-term growth strategy in the space exploration sector."
   },
   {
     "id": "RDDT:https://www.tradingview.com/news/zacks%3A2b32799cf094b%3A0-reddit-q1-earnings-beat-estimates-revenues-up-y-y-shares-rise/",
@@ -723,7 +867,7 @@
     "id": "IREN:https://iren.gcs-web.com/news-releases/news-release-details/iren-secures-34bn-ai-cloud-contract-nvidia",
     "ticker": "IREN",
     "headline": "IREN Secures $3.4bn AI Cloud Contract with NVIDIA",
-    "summary": "IREN announced a five-year, $3.4 billion AI infrastructure cloud services contract with NVIDIA, providing managed GPU cloud services for NVIDIA's internal AI and research workloads.",
+    "summary": "IREN Limited signed a five-year, approximately $3.4 billion AI Cloud contract with NVIDIA to provide managed GPU cloud services for NVIDIA's internal AI and research workloads.",
     "source": "IREN",
     "url": "https://iren.gcs-web.com/news-releases/news-release-details/iren-secures-34bn-ai-cloud-contract-nvidia",
     "datetime": "2026-05-07T00:00:00+00:00",
@@ -733,7 +877,7 @@
     "horizon_fit": "durable",
     "matched_keyword": "sec",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "This contract solidifies IREN's position in the AI cloud services market, enhancing its revenue base and operational scale, which is crucial for long-term growth."
+    "why_it_matters": "This significant contract with a leading AI company underscores IREN's growing presence in the AI infrastructure market and its ability to secure large-scale, long-term agreements, bolstering its competitive moat."
   },
   {
     "id": "IREN:https://iren.gcs-web.com/news-releases/news-release-details/iren-announces-strategic-partnership-nvidia",
@@ -862,6 +1006,22 @@
     "matched_keyword": "revenue",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "The expansion into multiple cities, including international markets, demonstrates Pony AI's growing competitive moat and its ability to scale operations, reinforcing the long-term investment thesis centered on global market penetration and technological leadership."
+  },
+  {
+    "id": "AXON:https://www.marketscreener.com/news/axon-reports-q1-2026-revenue-of-807-million-up-34-year-over-year-ce7f58d2dc88ff24",
+    "ticker": "AXON",
+    "headline": "Axon Enterprise Reports Q1 2026 Revenue of $807 Million, Up 34% Year Over Year",
+    "summary": "Axon Enterprise reported Q1 2026 revenue of $807 million, a 34% increase from the previous year, driven by strong demand across its product ecosystem, including TASER 10, Axon Body 4, counter-drone solutions, real-time operations, and AI products. The company also raised its full-year revenue outlook to a 30% to 32% annual growth range and maintained a 25.5% Adjusted EBITDA margin.",
+    "source": "MarketScreener",
+    "url": "https://www.marketscreener.com/news/axon-reports-q1-2026-revenue-of-807-million-up-34-year-over-year-ce7f58d2dc88ff24",
+    "datetime": "2026-05-06T00:00:00+00:00",
+    "theme": "guidance",
+    "theme_label": "Guidance / Outlook",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "outlook",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The strong revenue growth and positive outlook underscore Axon's robust business model and competitive moat, driven by its diversified product offerings and innovation in public safety technology."
   },
   {
     "id": "CRWD:https://www.sec.gov/Archives/edgar/data/1535527/000110465926055599/tm2532333-4_def14a.htm",
@@ -1518,6 +1678,22 @@
     "matched_keyword": "earnings",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "The scheduled earnings release indicates transparency and timely communication with investors, which is crucial for maintaining investor confidence and supports a positive long-term investment thesis."
+  },
+  {
+    "id": "RDDT:https://www.stocktitan.net/news/RDDT/reddit-reports-first-quarter-2026-results-2026-04-09",
+    "ticker": "RDDT",
+    "headline": "Reddit Reports First Quarter 2026 Results",
+    "summary": "Reddit reported Q1 2026 results: revenue $663M (up 69% YoY), DAUq 126.8M (up 17% YoY), net income $204M (31% of revenue) and Adjusted EBITDA $266M (40% margin). Operating cash flow was $312M and Free Cash Flow $311M. Cash, cash equivalents, and marketable securities were $2,771M. Guidance for Q2 2026: revenue $715M\u2013$725M and Adjusted EBITDA $285M\u2013$295M.",
+    "source": "StockTitan",
+    "url": "https://www.stocktitan.net/news/RDDT/reddit-reports-first-quarter-2026-results-2026-04-09",
+    "datetime": "2026-04-09T00:00:00+00:00",
+    "theme": "guidance",
+    "theme_label": "Guidance / Outlook",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "guidance",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "Strong Q1 2026 results and positive guidance for Q2 2026 confirm Reddit's robust financial health and growth trajectory, supporting a long-term investment thesis focused on its expanding advertising business and user engagement."
   },
   {
     "id": "RKLB:https://www.investing.com/news/company-news/rocket-lab-completes-11-billion-equity-offering-program-93CH-4602777",
@@ -3488,6 +3664,22 @@
     "why_it_matters": "Highlights Reddit's continued growth and profitability, indicating effective monetization strategies and strong user engagement, which are key drivers for long-term investment."
   },
   {
+    "id": "IREN:https://irisenergy.gcs-web.com/news-releases/news-release-details/iren-reports-q2-fy26-results",
+    "ticker": "IREN",
+    "headline": "IREN Secures $3.6bn GPU Financing for Microsoft Contract",
+    "summary": "IREN Limited secured $3.6 billion in GPU financing for a contract with Microsoft, covering 95% of GPU-related capital expenditures and supporting its expansion into AI infrastructure services.",
+    "source": "IREN",
+    "url": "https://irisenergy.gcs-web.com/news-releases/news-release-details/iren-reports-q2-fy26-results",
+    "datetime": "2026-02-05T00:00:00+00:00",
+    "theme": "legal_regulatory",
+    "theme_label": "Legal / Regulatory",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "sec",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The substantial financing for a major contract with Microsoft demonstrates IREN's ability to secure significant capital for large-scale AI infrastructure projects, supporting its long-term growth strategy."
+  },
+  {
     "id": "CRWD:https://www.crowdstrike.com/newsroom/press-releases/crowdstrike-announces-date-of-fourth-quarter-and-fiscal-year-2026-financial-results-conference-call/",
     "ticker": "CRWD",
     "headline": "CrowdStrike Announces Date of Fourth Quarter and Fiscal Year 2026 Financial Results Conference Call",
@@ -3744,6 +3936,22 @@
     "why_it_matters": "Consistent revenue growth and strong earnings reflect effective execution of growth strategies and market demand for cybersecurity solutions."
   },
   {
+    "id": "MU:https://micron.gcs-web.com/news-releases/news-release-details/micron-technology-report-fiscal-first-quarter-results-december-6",
+    "ticker": "MU",
+    "headline": "Micron Technology to Report Fiscal First Quarter Results on December 17, 2025",
+    "summary": "Micron announced it will hold its fiscal first quarter earnings conference call on December 17, 2025, at 2:30 p.m. Mountain time.",
+    "source": "Micron Technology",
+    "url": "https://micron.gcs-web.com/news-releases/news-release-details/micron-technology-report-fiscal-first-quarter-results-december-6",
+    "datetime": "2025-11-19T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "earnings",
+    "thesis_signal": "noise",
+    "why_it_matters": ""
+  },
+  {
     "id": "LUNR:https://www.benzinga.com/quote/LUNR/earnings",
     "ticker": "LUNR",
     "headline": "Intuitive Machines Reports Q3 2025 Earnings: Revenue Misses Estimates",
@@ -3904,6 +4112,22 @@
     "why_it_matters": "The successful convertible notes offering reflects investor confidence in IREN's strategic direction and provides capital to support its expansion into AI infrastructure."
   },
   {
+    "id": "IREN:https://iren.gcs-web.com/news-releases/news-release-details/iren-secures-new-multi-year-ai-cloud-contracts",
+    "ticker": "IREN",
+    "headline": "IREN Secures New Multi-Year AI Cloud Contracts",
+    "summary": "IREN Limited announced additional multi-year cloud services contracts with leading AI companies for NVIDIA Blackwell GPU deployments, aiming to achieve over $500 million in annualized run-rate revenue by Q1 2026.",
+    "source": "IREN",
+    "url": "https://iren.gcs-web.com/news-releases/news-release-details/iren-secures-new-multi-year-ai-cloud-contracts",
+    "datetime": "2025-10-07T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "durable",
+    "matched_keyword": "revenue",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The expansion of IREN's AI Cloud capacity and the securing of new contracts demonstrate its growing market share and the scalability of its AI infrastructure services, key drivers of its long-term growth."
+  },
+  {
     "id": "MU:https://www.investing.com/news/transcripts/earnings-call-transcript-micron-technology-q4-2025-beats-eps-and-revenue-forecasts-93CH-4252280",
     "ticker": "MU",
     "headline": "Earnings call transcript: Micron Technology Q4 2025 beats EPS and revenue forecasts",
@@ -3950,6 +4174,22 @@
     "matched_keyword": "acquire",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "Integrating Prepared's technology enhances Axon's emergency response capabilities, bolstering its competitive position."
+  },
+  {
+    "id": "IREN:https://www.globenewswire.com/news-release/2025/09/22/3153782/0/en/iren-doubles-ai-cloud-to-23k-gpus-raises-ai-cloud-arr-target-to-500m.html",
+    "ticker": "IREN",
+    "headline": "IREN Doubles AI Cloud to 23k GPUs, Raises AI Cloud ARR Target to >$500m",
+    "summary": "IREN Limited doubled its AI Cloud capacity to 23,000 GPUs and raised its AI Cloud annualized run-rate revenue target to over $500 million by Q1 2026.",
+    "source": "GlobeNewswire",
+    "url": "https://www.globenewswire.com/news-release/2025/09/22/3153782/0/en/iren-doubles-ai-cloud-to-23k-gpus-raises-ai-cloud-arr-target-to-500m.html",
+    "datetime": "2025-09-22T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "revenue",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The significant increase in AI Cloud capacity and the raised revenue target reflect IREN's commitment to expanding its AI infrastructure services, enhancing its competitive position in the market."
   },
   {
     "id": "CRWD:https://ir.crowdstrike.com/news-releases/news-release-details/crowdstrike-unveils-falcon-platform-fall-release-lead",
@@ -4003,7 +4243,7 @@
     "id": "MU:https://investors.micron.com/news-releases/news-release-details/micron-technology-report-fiscal-fourth-quarter-results-and-full",
     "ticker": "MU",
     "headline": "Micron Technology to Report Fiscal Fourth Quarter Results and Full Fiscal Year 2025 on September 23, 2025",
-    "summary": "Micron scheduled its fiscal fourth quarter and full fiscal year 2025 earnings conference call for September 23, 2025, at 2:30 p.m. Mountain time.",
+    "summary": "Micron announced it will hold its fiscal fourth quarter and full fiscal year earnings conference call on September 23, 2025, at 2:30 p.m. Mountain time.",
     "source": "Micron Technology",
     "url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-report-fiscal-fourth-quarter-results-and-full",
     "datetime": "2025-08-28T00:00:00+00:00",
@@ -4012,8 +4252,8 @@
     "priority": "high",
     "horizon_fit": "possible",
     "matched_keyword": "earnings",
-    "thesis_signal": "thesis_confirming",
-    "why_it_matters": "The fiscal year-end earnings report will offer a comprehensive overview of Micron's annual performance, providing valuable information for evaluating its competitive position and growth trajectory in the semiconductor industry."
+    "thesis_signal": "noise",
+    "why_it_matters": "This announcement provides investors with a clear timeline for upcoming financial disclosures, aiding in long-term investment planning."
   },
   {
     "id": "PONY:https://www.marketbeat.com/earnings/reports/2025-8-12-pony-ai-inc-stock/",
