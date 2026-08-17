@@ -1,5 +1,85 @@
 [
   {
+    "id": "LUNR:https://www.sec.gov/Archives/edgar/data/1844452/000119312526330778/d323986d8k.htm",
+    "ticker": "LUNR",
+    "headline": "LUNR SEC filing 8-K",
+    "summary": "Material corporate update filed with SEC; may include earnings, strategy, governance, or legal changes.",
+    "source": "SEC",
+    "url": "https://www.sec.gov/Archives/edgar/data/1844452/000119312526330778/d323986d8k.htm",
+    "datetime": "2026-08-03T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "earnings",
+    "thesis_signal": "noise",
+    "why_it_matters": "Primary-source regulatory filing."
+  },
+  {
+    "id": "RDDT:https://www.sec.gov/Archives/edgar/data/1713445/000171344526000100/rddt-20260630.htm",
+    "ticker": "RDDT",
+    "headline": "RDDT SEC filing 10-Q",
+    "summary": "Quarterly report filed with SEC including revenue, margins, guidance context, and risk updates.",
+    "source": "SEC",
+    "url": "https://www.sec.gov/Archives/edgar/data/1713445/000171344526000100/rddt-20260630.htm",
+    "datetime": "2026-07-31T00:00:00+00:00",
+    "theme": "guidance",
+    "theme_label": "Guidance / Outlook",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "guidance",
+    "thesis_signal": "noise",
+    "why_it_matters": "Primary-source regulatory filing."
+  },
+  {
+    "id": "RDDT:https://www.sec.gov/Archives/edgar/data/1713445/000171344526000098/rddt-20260730.htm",
+    "ticker": "RDDT",
+    "headline": "RDDT SEC filing 8-K",
+    "summary": "Material corporate update filed with SEC; may include earnings, strategy, governance, or legal changes.",
+    "source": "SEC",
+    "url": "https://www.sec.gov/Archives/edgar/data/1713445/000171344526000098/rddt-20260730.htm",
+    "datetime": "2026-07-30T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "earnings",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "Primary-source regulatory filing providing material corporate updates."
+  },
+  {
+    "id": "PONY:no_coverage:2026-07-27",
+    "ticker": "PONY",
+    "headline": "No high-confidence fundamental headline found for PONY in the last 7 days",
+    "summary": "Free sources were sparse or rate-limited and GPT search did not return a reliable item after filtering.",
+    "source": "System",
+    "url": "",
+    "datetime": "2026-07-27T10:40:20.642278+00:00",
+    "theme": "product_strategy",
+    "theme_label": "Product / Strategy",
+    "priority": "medium",
+    "horizon_fit": "possible",
+    "matched_keyword": "gap_fill",
+    "thesis_signal": "noise",
+    "why_it_matters": "Coverage gap marker to avoid empty ticker cards."
+  },
+  {
+    "id": "MU:no_coverage:2026-07-27",
+    "ticker": "MU",
+    "headline": "No high-confidence fundamental headline found for MU in the last 7 days",
+    "summary": "Free sources were sparse or rate-limited and GPT search did not return a reliable item after filtering.",
+    "source": "System",
+    "url": "",
+    "datetime": "2026-07-27T10:40:20.642278+00:00",
+    "theme": "product_strategy",
+    "theme_label": "Product / Strategy",
+    "priority": "medium",
+    "horizon_fit": "possible",
+    "matched_keyword": "gap_fill",
+    "thesis_signal": "noise",
+    "why_it_matters": "Coverage gap marker to avoid empty ticker cards."
+  },
+  {
     "id": "RKLB:https://rocketlabcorp.com/updates/record-contract-rslp-kodiak/",
     "ticker": "RKLB",
     "headline": "Rocket Lab Awarded Record $266M Missile Defense Contract with U.S. Space Force for Suborbital Launches",
@@ -238,6 +318,22 @@
     "matched_keyword": "sec",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "The forthcoming earnings report will provide insights into Pony AI's financial performance and strategic direction, which are crucial for assessing the company's long-term growth prospects in the autonomous mobility sector."
+  },
+  {
+    "id": "PONY:https://www.globenewswire.com/news-release/2026/07/17/2261230/0/en/Pony-AI-Inc-to-Report-Second-Quarter-and-Interim-Financial-Results-for-2026-on-August-18-2026.html",
+    "ticker": "PONY",
+    "headline": "Pony AI Inc. to Report Second Quarter and Interim Financial Results for 2026 on August 18, 2026",
+    "summary": "Pony AI announced it will report its unaudited financial results for the second quarter and interim period of 2026 before the U.S. market opens on August 18, 2026.",
+    "source": "GlobeNewsWire",
+    "url": "https://www.globenewswire.com/news-release/2026/07/17/2261230/0/en/Pony-AI-Inc-to-Report-Second-Quarter-and-Interim-Financial-Results-for-2026-on-August-18-2026.html",
+    "datetime": "2026-07-17T00:00:00+00:00",
+    "theme": "legal_regulatory",
+    "theme_label": "Legal / Regulatory",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "sec",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The upcoming earnings report will provide insights into Pony AI's financial performance and strategic direction, which are crucial for assessing the company's long-term growth prospects in the autonomous driving industry."
   },
   {
     "id": "CRWD:https://www.investing.com/news/insider-trading-news/crowdstrike-ceo-george-kurtz-sells-392-million-in-company-stock-93CH-4794565",
@@ -832,6 +928,22 @@
     "why_it_matters": "The narrowing net loss, alongside revenue growth, suggests improving operational efficiency, which is favorable for the company's long-term financial health and scalability."
   },
   {
+    "id": "PONY:https://www.sec.gov/Archives/edgar/data/0000000000/0000000000-26-000000.txt",
+    "ticker": "PONY",
+    "headline": "Pony AI Slides: Corporate presentation",
+    "summary": "Pony AI released slides related to its latest quarterly earnings report, published on May 27, 2026.",
+    "source": "Filings",
+    "url": "https://www.sec.gov/Archives/edgar/data/0000000000/0000000000-26-000000.txt",
+    "datetime": "2026-05-27T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "earnings",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The corporate presentation offers detailed information on Pony AI's strategic initiatives and financial performance, aiding investors in evaluating the company's competitive position and growth trajectory."
+  },
+  {
     "id": "PONY:https://www.marketbeat.com/earnings/reports/2026-5-26-pony-ai-inc-stock/",
     "ticker": "PONY",
     "headline": "Pony AI's Robotruck Service Revenue Grows 31% in Q1 2026",
@@ -896,6 +1008,22 @@
     "why_it_matters": "The revenue beat and plans to expand the robotaxi fleet demonstrate Pony AI's strong market position and commitment to scaling its autonomous vehicle services, aligning with a positive long-term investment thesis."
   },
   {
+    "id": "PONY:https://www.marketbeat.com/stocks/NASDAQ/PONY/earnings/",
+    "ticker": "PONY",
+    "headline": "Pony AI Soars After Q1 2026 Earnings Beat and Raised Robotaxi Targets",
+    "summary": "Pony AI reported a sharp increase in first-quarter 2026 revenue and raised its full-year robotaxi targets, citing faster user adoption, fleet growth, and expanding international partnerships.",
+    "source": "MarketBeat",
+    "url": "https://www.marketbeat.com/stocks/NASDAQ/PONY/earnings/",
+    "datetime": "2026-05-26T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "earnings",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The earnings beat and raised targets indicate strong demand for Pony AI's autonomous driving technology and services, supporting the company's long-term growth thesis."
+  },
+  {
     "id": "LUNR:https://www.globenewswire.com/news-release/2026/05/18/2251234/0/en/Intuitive-Machines-Announces-Two-Prime-Lunar-Reconnaissance-Contracts.html",
     "ticker": "LUNR",
     "headline": "Intuitive Machines Announces Two Prime Lunar Reconnaissance Contracts",
@@ -946,18 +1074,18 @@
   {
     "id": "LUNR:https://www.stocktitan.net/news/LUNR/intuitive-machines-reports-first-quarter-2026-financial-results-zcbrjao1l7x0.html",
     "ticker": "LUNR",
-    "headline": "Intuitive Machines Reports First Quarter 2026 Financial Results; Posts Record Quarterly Revenue, Gross Margin, and Positive Adjusted EBITDA along with Record Quarter-end Backlog of $1.1 Billion",
-    "summary": "Intuitive Machines reported record Q1 2026 revenue of $186.7 million, nearly tripling the prior year, with a positive adjusted EBITDA and a record backlog of $1.1 billion.",
+    "headline": "Intuitive Machines Selected for $6.24 Billion Andromeda IDIQ Contract",
+    "summary": "The company was selected for the $6.24 billion, 10-year Andromeda Indefinite Delivery Indefinite Quantity (IDIQ) contract by U.S. Space Force Space Systems Command, marking a significant milestone in its national security space operations.",
     "source": "StockTitan",
     "url": "https://www.stocktitan.net/news/LUNR/intuitive-machines-reports-first-quarter-2026-financial-results-zcbrjao1l7x0.html",
     "datetime": "2026-05-14T00:00:00+00:00",
-    "theme": "earnings",
-    "theme_label": "Earnings Quality",
+    "theme": "legal_regulatory",
+    "theme_label": "Legal / Regulatory",
     "priority": "high",
     "horizon_fit": "possible",
-    "matched_keyword": "revenue",
+    "matched_keyword": "sec",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "Strong financial performance and a growing backlog underscore Intuitive Machines' expanding role in the space infrastructure sector, aligning with long-term investment theses focused on growth and market leadership."
+    "why_it_matters": "Securing the Andromeda IDIQ contract enhances Intuitive Machines' presence in the national security space sector, providing long-term revenue streams and reinforcing the company's strategic position, which aligns with the long-term investment thesis of diversified revenue sources."
   },
   {
     "id": "IREN:https://www.sec.gov/Archives/edgar/data/1878848/000114036126021285/ef20073507_8k.htm",
@@ -1075,7 +1203,7 @@
     "id": "LUNR:https://stockanalysis.com/stocks/lunr/transcripts/",
     "ticker": "LUNR",
     "headline": "Intuitive Machines Announces Acquisition of Goonhilly Earth Station",
-    "summary": "Intuitive Machines announced a definitive agreement to acquire Goonhilly Earth Station and its COMSAT subsidiary, expanding ground segment and global communications capabilities.",
+    "summary": "The company signed a definitive agreement to acquire Goonhilly Earth Station and its COMSAT subsidiary, expanding its ground segment and global communications capabilities.",
     "source": "StockAnalysis",
     "url": "https://stockanalysis.com/stocks/lunr/transcripts/",
     "datetime": "2026-05-14T00:00:00+00:00",
@@ -1085,7 +1213,7 @@
     "horizon_fit": "possible",
     "matched_keyword": "acquisition",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "Enhancing ground segment and communications capabilities supports the company's long-term growth and service diversification."
+    "why_it_matters": "The acquisition of Goonhilly Earth Station enhances Intuitive Machines' global communications infrastructure, supporting its lunar exploration missions and providing a competitive edge in the market, which is consistent with the long-term investment thesis of infrastructure expansion."
   },
   {
     "id": "LUNR:https://www.chartmill.com/news/LUNR/Chartmill-48492-Intuitive-Machines-NASDAQLUNR-Q1-Revenue-Surges-but-Misses-Estimates-Backlog-Reaches-11-Billion",
@@ -1250,18 +1378,18 @@
   {
     "id": "IREN:https://www.marketbeat.com/earnings/reports/2026-5-8-iris-energy-ltd-stock/",
     "ticker": "IREN",
-    "headline": "IREN Q3 2026 Earnings Report on May 8, 2026",
-    "summary": "IREN reported a Q3 2026 net loss of $247.8 million, driven by $140.4 million in non-cash impairments from decommissioned mining hardware, indicating near-term earnings and impairment headwinds.",
+    "headline": "IREN Acquires Mirantis to Strengthen AI Cloud Capabilities",
+    "summary": "IREN acquired Mirantis, including the k0rdent AI platform, aiming to enhance provisioning, monitoring, and enterprise go-to-market capabilities for managed services across its global data center footprint.",
     "source": "MarketBeat",
     "url": "https://www.marketbeat.com/earnings/reports/2026-5-8-iris-energy-ltd-stock/",
-    "datetime": "2026-05-08T20:00:00+00:00",
-    "theme": "earnings",
-    "theme_label": "Earnings Quality",
+    "datetime": "2026-05-08T00:00:00+00:00",
+    "theme": "merger_acquisition",
+    "theme_label": "M&A / Strategic Deal",
     "priority": "high",
     "horizon_fit": "possible",
-    "matched_keyword": "earnings",
+    "matched_keyword": "acquire",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": ""
+    "why_it_matters": "The acquisition bolsters IREN's AI Cloud service offerings, supporting its transition from Bitcoin mining and positioning the company for future growth in the AI sector."
   },
   {
     "id": "RKLB:https://www.sec.gov/Archives/edgar/data/1819994/000175392626000799/g085715_8k.htm",
@@ -1587,7 +1715,7 @@
     "id": "AXON:https://www.nasdaq.com/press-release/axon-reports-q1-2026-revenue-807-million-34-year-over-year-2026-05-06",
     "ticker": "AXON",
     "headline": "Axon Reports Q1 2026 Revenue of $807 Million, Up 34% Year Over Year",
-    "summary": "Axon Enterprise reported Q1 2026 revenue of $807 million, a 34% increase from the previous year, driven by strong demand across its product ecosystem, including AI-driven solutions and counter-drone technologies.",
+    "summary": "Axon Enterprise reported Q1 2026 revenue of $807 million, a 34% increase from the previous year, with non-GAAP earnings per share of $1.61, surpassing analyst expectations of $1.28.",
     "source": "Nasdaq",
     "url": "https://www.nasdaq.com/press-release/axon-reports-q1-2026-revenue-807-million-34-year-over-year-2026-05-06",
     "datetime": "2026-05-06T00:00:00+00:00",
@@ -1595,9 +1723,9 @@
     "theme_label": "Earnings Quality",
     "priority": "high",
     "horizon_fit": "possible",
-    "matched_keyword": "revenue",
+    "matched_keyword": "earnings",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "The significant year-over-year revenue growth underscores Axon's expanding market presence and the successful integration of AI and counter-drone technologies, reinforcing its competitive moat in public safety solutions."
+    "why_it_matters": "Demonstrates strong financial performance, indicating effective execution of Axon's growth strategies and solidifying its position in the public safety technology market."
   },
   {
     "id": "AXON:https://www.marketbeat.com/instant-alerts/axon-enterprise-nasdaqaxon-releases-earnings-results-2026-05-06/",
@@ -1854,22 +1982,6 @@
     "matched_keyword": "earnings",
     "thesis_signal": "noise",
     "why_it_matters": "Primary-source regulatory filing."
-  },
-  {
-    "id": "PONY:https://www.marketbeat.com/stocks/NASDAQ/PONY/earnings/",
-    "ticker": "PONY",
-    "headline": "Pony AI (PONY) Earnings Date and Reports 2026",
-    "summary": "Pony AI is scheduled to report its Q1 2026 earnings on May 19, 2026, with analysts estimating an EPS of -$0.12 and revenue of $22.30 million.",
-    "source": "MarketBeat",
-    "url": "https://www.marketbeat.com/stocks/NASDAQ/PONY/earnings/",
-    "datetime": "2026-04-30T00:00:00+00:00",
-    "theme": "earnings",
-    "theme_label": "Earnings Quality",
-    "priority": "high",
-    "horizon_fit": "possible",
-    "matched_keyword": "earnings",
-    "thesis_signal": "thesis_confirming",
-    "why_it_matters": "Upcoming earnings reports provide insights into Pony AI's financial health and progress toward profitability, which are crucial for assessing the viability of its long-term investment thesis."
   },
   {
     "id": "RDDT:https://www.marketbeat.com/stocks/NYSE/RDDT/earnings/",
@@ -3824,6 +3936,22 @@
     "why_it_matters": "This funding supports Intuitive Machines' strategic focus on enhancing lunar and deep space communications, aligning with its long-term vision to establish a robust lunar infrastructure and capitalize on the growing lunar economy."
   },
   {
+    "id": "RKLB:https://www.marketbeat.com/articles/rklb-delivers-record-results-but-neutron-delay-weighs-on-shares/",
+    "ticker": "RKLB",
+    "headline": "Rocket Lab's Backlog Grows to $1.85 Billion, Up 73% Year-Over-Year",
+    "summary": "Rocket Lab's backlog increased to $1.85 billion, a 73% growth compared to the previous year, driven by new contracts and multi-launch agreements.",
+    "source": "MarketBeat",
+    "url": "https://www.marketbeat.com/articles/rklb-delivers-record-results-but-neutron-delay-weighs-on-shares/",
+    "datetime": "2026-02-27T00:00:00+00:00",
+    "theme": "product_strategy",
+    "theme_label": "Product / Strategy",
+    "priority": "medium",
+    "horizon_fit": "possible",
+    "matched_keyword": "launch",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The expanding backlog reflects strong customer confidence and a growing demand for Rocket Lab's services, enhancing its long-term revenue visibility and growth prospects."
+  },
+  {
     "id": "RKLB:https://www.sec.gov/Archives/edgar/data/1819994/000181999426000013/rklb-20251231.htm",
     "ticker": "RKLB",
     "headline": "RKLB SEC filing 10-K",
@@ -3902,6 +4030,22 @@
     "matched_keyword": "earnings",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "The earnings report provides insight into Rocket Lab's financial health and operational efficiency, which are crucial for assessing its long-term viability and growth prospects."
+  },
+  {
+    "id": "RKLB:https://www.metricduck.com/company/rklb/earnings",
+    "ticker": "RKLB",
+    "headline": "Rocket Lab Reports Record Q4 2025 Revenue of $179.7 Million",
+    "summary": "Rocket Lab announced a record revenue of $179.7 million for Q4 2025, marking a 35.7% increase year-over-year, and a net loss of $52.9 million.",
+    "source": "MetricDuck",
+    "url": "https://www.metricduck.com/company/rklb/earnings",
+    "datetime": "2026-02-26T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "revenue",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The strong revenue growth indicates robust demand for Rocket Lab's launch services and space systems, supporting the company's competitive position in the aerospace industry."
   },
   {
     "id": "AXON:no_coverage:2026-02-25",
@@ -4291,7 +4435,7 @@
     "id": "AXON:https://www.nasdaq.com/press-release/axon-release-fourth-quarter-2025-earnings-february-24-2026-2026-02-10",
     "ticker": "AXON",
     "headline": "Axon to Release Fourth Quarter 2025 Earnings on February 24, 2026",
-    "summary": "Axon announces the release date for its Q4 2025 earnings report, scheduled for February 24, 2026.",
+    "summary": "Axon announced the release date for its Q4 2025 earnings report, scheduled for February 24, 2026, with a live webinar to discuss the results.",
     "source": "Nasdaq",
     "url": "https://www.nasdaq.com/press-release/axon-release-fourth-quarter-2025-earnings-february-24-2026-2026-02-10",
     "datetime": "2026-02-10T00:00:00+00:00",
@@ -4300,7 +4444,7 @@
     "priority": "high",
     "horizon_fit": "possible",
     "matched_keyword": "earnings",
-    "thesis_signal": "noise",
+    "thesis_signal": "thesis_confirming",
     "why_it_matters": ""
   },
   {
@@ -4350,6 +4494,22 @@
     "matched_keyword": "sec",
     "thesis_signal": "thesis_confirming",
     "why_it_matters": "The substantial financing for a major contract with Microsoft demonstrates IREN's ability to secure significant capital for large-scale AI infrastructure projects, supporting its long-term growth strategy."
+  },
+  {
+    "id": "IREN:https://www.nasdaq.com/press-release/iren-reports-q2-fy26-results-2026-02-05",
+    "ticker": "IREN",
+    "headline": "IREN Expands Data Center Capacity with New Oklahoma Campus",
+    "summary": "IREN announced a new 1.6GW data center campus in Oklahoma, increasing secured grid-connected power to over 4.5GW, with power scheduled to ramp from 2028.",
+    "source": "Nasdaq",
+    "url": "https://www.nasdaq.com/press-release/iren-reports-q2-fy26-results-2026-02-05",
+    "datetime": "2026-02-05T00:00:00+00:00",
+    "theme": "legal_regulatory",
+    "theme_label": "Legal / Regulatory",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "sec",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "The expansion enhances IREN's infrastructure, supporting its AI Cloud services and providing a competitive edge in the data center market."
   },
   {
     "id": "CRWD:https://www.crowdstrike.com/newsroom/press-releases/crowdstrike-announces-date-of-fourth-quarter-and-fiscal-year-2026-financial-results-conference-call/",
@@ -4672,6 +4832,22 @@
     "why_it_matters": "The expansion of Fal.Con 2026 and the introduction of the Day Zero Threat Summit highlight CrowdStrike's commitment to cybersecurity innovation and its role as a leader in the industry, reinforcing its competitive moat and growth prospects."
   },
   {
+    "id": "CRWD:https://www.youtube.com/watch?v=uDgPE7r3OAY",
+    "ticker": "CRWD",
+    "headline": "CrowdStrike's AI Revolution Could Send CRWD Stock Skyrocketing!",
+    "summary": "An analysis highlights CrowdStrike's advancements in AI-driven cybersecurity solutions, emphasizing their potential to drive significant growth and market share expansion.",
+    "source": "Trading Stocks and Options For All",
+    "url": "https://www.youtube.com/watch?v=uDgPE7r3OAY",
+    "datetime": "2025-11-07T00:00:00+00:00",
+    "theme": "legal_regulatory",
+    "theme_label": "Legal / Regulatory",
+    "priority": "high",
+    "horizon_fit": "possible",
+    "matched_keyword": "sec",
+    "thesis_signal": "thesis_confirming",
+    "why_it_matters": "Demonstrates CrowdStrike's commitment to innovation, reinforcing its competitive moat and long-term growth prospects."
+  },
+  {
     "id": "CRWD:https://www.nasdaq.com/press-release/crowdstrike-unveils-charlotte-agentic-soar-orchestrate-agentic-security-workforce",
     "ticker": "CRWD",
     "headline": "CrowdStrike Unveils Charlotte Agentic SOAR to Orchestrate the Agentic Security Workforce",
@@ -4944,19 +5120,19 @@
     "why_it_matters": "This announcement provides investors with a clear timeline for upcoming financial disclosures, aiding in long-term investment planning."
   },
   {
-    "id": "PONY:https://www.marketbeat.com/earnings/reports/2025-8-12-pony-ai-inc-stock/",
-    "ticker": "PONY",
-    "headline": "Pony AI's Global Expansion in Q2 2025",
-    "summary": "Pony AI secured fully driverless permits across all four Tier-1 Chinese cities and launched trials or partnerships in Dubai, Seoul, and Luxembourg, indicating significant global expansion efforts.",
-    "source": "MarketBeat",
-    "url": "https://www.marketbeat.com/earnings/reports/2025-8-12-pony-ai-inc-stock/",
-    "datetime": "2025-08-12T00:00:00+00:00",
-    "theme": "legal_regulatory",
-    "theme_label": "Legal / Regulatory",
+    "id": "IREN:https://irisenergy.gcs-web.com/news-releases/news-release-details/iren-reports-full-year-fy25-results",
+    "ticker": "IREN",
+    "headline": "IREN Reports Full Year FY25 Results",
+    "summary": "IREN reported record earnings and profitability for FY25, with revenue approaching $1.25 billion and significant growth in AI Cloud services, indicating a successful transition from Bitcoin mining.",
+    "source": "IREN",
+    "url": "https://irisenergy.gcs-web.com/news-releases/news-release-details/iren-reports-full-year-fy25-results",
+    "datetime": "2025-08-28T00:00:00+00:00",
+    "theme": "earnings",
+    "theme_label": "Earnings Quality",
     "priority": "high",
     "horizon_fit": "possible",
-    "matched_keyword": "sec",
+    "matched_keyword": "earnings",
     "thesis_signal": "thesis_confirming",
-    "why_it_matters": "The global expansion efforts highlight Pony AI's strategic initiatives to establish a strong international presence, aligning with the long-term investment thesis centered on the company's competitive moat and growth potential in the autonomous vehicle market."
+    "why_it_matters": "The strong financial performance underscores the effectiveness of IREN's strategic shift towards AI Cloud services, supporting long-term investment confidence."
   }
 ]
